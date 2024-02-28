@@ -1,56 +1,50 @@
 package api
 
 import (
-	"github.com/gorilla/websocket"
+	"encoding/json"
+	"fmt"
+	"github.com/tasnimzotder/tchat/server/models"
 	"log"
 	"net/http"
 )
 
-type ConnStruct struct {
-	Conn   *websocket.Conn
-	UserID string
-}
-
 type ServerAPI struct {
-	Server      http.Server
-	Connections map[string]ConnStruct
+	Server        http.Server
+	MessageStacks map[string][]models.Message
 }
 
 func NewServerAPI() *ServerAPI {
 	return &ServerAPI{
-		Server:      http.Server{},
-		Connections: make(map[string]ConnStruct),
+		Server:        http.Server{},
+		MessageStacks: make(map[string][]models.Message),
 	}
 }
 
-func (s *ServerAPI) PingHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusOK)
-	write, err := w.Write([]byte("Pong"))
-	if err != nil {
-		log.Printf("Failed to write response: %v", err)
-	} else {
-		log.Printf("Response written: %v", write)
-	}
-}
-
-func (s *ServerAPI) Start() {
+func (s *ServerAPI) Start(port string) {
 	log.Println("Starting server")
 
 	// routes
 	http.HandleFunc("/ping", s.PingHandler)
-	http.HandleFunc("/v1/message", s.messageHandler)
 	http.HandleFunc("/v1/user/create", s.createUserHandler)
+	http.HandleFunc("/v1/message/send", s.sendMessageHandler)
+	http.HandleFunc("/v1/message/get", s.getMessageHandler)
 
 	// start server
-	s.Server.Addr = ":8080"
+	s.Server.Addr = fmt.Sprintf(":%s", port)
 	err := s.Server.ListenAndServe()
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
+}
+
+func (s *ServerAPI) PingHandler(w http.ResponseWriter, _ *http.Request) {
+	resp := struct {
+		Message string `json:"message"`
+	}{
+		Message: "pong",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(resp)
 }

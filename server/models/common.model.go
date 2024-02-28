@@ -7,3 +7,8 @@ type Message struct {
 	Payload     string `json:"payload"`
 	Timestamp   string `json:"timestamp"`
 }
+
+type User struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}

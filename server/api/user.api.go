@@ -2,44 +2,33 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/tasnimzotder/tchat/server/models"
 	"github.com/tasnimzotder/tchat/server/utils"
-	"log"
 	"net/http"
 )
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
 func (s *ServerAPI) createUserHandler(w http.ResponseWriter, r *http.Request) {
-	// check if request is POST
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		utils.ErrorResponse(w, "method not allowed", nil)
+
 		return
 	}
 
-	// get user from request body
-	var user User
+	var user models.User
+
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		utils.ErrorResponse(w, "", err)
+
 		return
 	}
 
 	uuid, _ := utils.GenerateUUID()
 	user.ID = uuid
 
-	log.Printf("User created: %v", user)
-
-	//	todo: create a certificate for the user for end-to-end encryption
-
-	//	return user
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(user)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(user)
 }
