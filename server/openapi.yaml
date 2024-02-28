@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: Title
+  description: Title
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local server (HTTP)
+  - url: ws://localhost:8080
+    description: Local server (WebSocket)
+paths:
+  /ping:
+    get:
+      summary: Ping
+      description: Ping the server
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pong
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/websocket"
+	"github.com/tasnimzotder/tchat/server/models"
 	"log"
 	"net/http"
 )
@@ -12,13 +13,6 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin:     func(r *http.Request) bool { return true },
-}
-
-type Message struct {
-	SenderID    string `json:"sender_id"`
-	RecipientID string `json:"recipient_id"`
-	MessageType string `json:"message_type"`
-	Payload     string `json:"payload"`
 }
 
 func (s *ServerAPI) messageHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +40,7 @@ func (s *ServerAPI) messageHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		var msg Message
+		var msg models.Message
 		err = json.Unmarshal(msgBytes, &msg)
 		if err != nil {
 			log.Printf("Failed to unmarshal message: %v", err)
@@ -60,7 +54,8 @@ func (s *ServerAPI) messageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// ping message
-		if msg.MessageType == "ping" {
+		if msg.MessageType == "init" {
+			log.Printf("Init message received from %s", msg.SenderID)
 			continue
 		}
 
@@ -79,7 +74,7 @@ func (s *ServerAPI) messageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendWSMessage(recipientConn ConnStruct, msg Message) error {
+func sendWSMessage(recipientConn ConnStruct, msg models.Message) error {
 	msgBytes, err := json.Marshal(msg)
 	if err != nil {
 		return err

@@ -18,13 +18,19 @@ type ServerAPI struct {
 
 func NewServerAPI() *ServerAPI {
 	return &ServerAPI{
-		Server: http.Server{},
-		//Connections: make(map[string]*websocket.Conn),
+		Server:      http.Server{},
 		Connections: make(map[string]ConnStruct),
 	}
 }
 
 func (s *ServerAPI) PingHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
 	write, err := w.Write([]byte("Pong"))
 	if err != nil {
 		log.Printf("Failed to write response: %v", err)
@@ -39,7 +45,9 @@ func (s *ServerAPI) Start() {
 	// routes
 	http.HandleFunc("/ping", s.PingHandler)
 	http.HandleFunc("/v1/message", s.messageHandler)
+	http.HandleFunc("/v1/user/create", s.createUserHandler)
 
+	// start server
 	s.Server.Addr = ":8080"
 	err := s.Server.ListenAndServe()
 	if err != nil {
