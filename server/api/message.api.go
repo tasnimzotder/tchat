@@ -74,16 +74,19 @@ func (s *ServerAPI) getMessageHandler(w http.ResponseWriter, r *http.Request) {
 		messages = append(messages, message)
 	}
 
+	// if there are no messages return an empty array with status 204
+	if len(messages) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		_ = json.NewEncoder(w).Encode([]models.Message{})
+
+		return
+	}
+
 	// clear the message stack
 	s.MessageStacks[recipientID] = []models.Message{}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(struct {
-		Response string           `json:"response"`
-		Messages []models.Message `json:"messages"`
-	}{
-		Response: "messages fetched successfully",
-		Messages: messages,
-	})
+
+	_ = json.NewEncoder(w).Encode(messages)
 }
