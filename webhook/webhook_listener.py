@@ -18,9 +18,10 @@ def handle_webhook():
         # clone the repository "tchat" if not exists
         if not os.path.exists('/app/tchat'):
             os.system("git clone {}".format(GIT_REPO))
-        else:
-            os.system("cd {}/tchat".format(WORK_DIR))
-            os.system("git pull origin main")
+
+        # pull the latest changes from the repository
+        os.system("cd {}/tchat".format(WORK_DIR))
+        os.system("git pull origin main")
 
         # build and run the docker containers
         os.system("docker compose -f {}/tchat/server/compose.yaml up -d --build".format(WORK_DIR))

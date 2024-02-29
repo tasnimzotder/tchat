@@ -19,7 +19,7 @@ func GetMessages() ([]models.Message, error) {
 
 	u := url.URL{
 		Scheme: "http",
-		Host:   "localhost:8080",
+		Host:   utils.GetEnvVariable("SERVER_HOST"),
 		Path:   "/v1/message/get",
 	}
 
@@ -53,7 +53,7 @@ func GetMessages() ([]models.Message, error) {
 	return messages, nil
 }
 
-func SendMessage(recipientID, message, messageType string) error {
+func SendMessage(recipientID, messageType, message string) error {
 	config, err := utils.ReadFromConfigFile()
 	if err != nil {
 		log.Printf("Failed to read config file: %v", err)
@@ -62,7 +62,7 @@ func SendMessage(recipientID, message, messageType string) error {
 
 	u := url.URL{
 		Scheme: "http",
-		Host:   "localhost:8080",
+		Host:   utils.GetEnvVariable("SERVER_HOST"),
 		Path:   "/v1/message/send",
 	}
 

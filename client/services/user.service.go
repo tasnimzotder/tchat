@@ -21,7 +21,7 @@ func InitializeNewConnection(username string) {
 
 	u := url.URL{
 		Scheme: "http",
-		Host:   "localhost:8080",
+		Host:   utils.GetEnvVariable("SERVER_HOST"),
 		Path:   "/v1/user/create",
 	}
 
