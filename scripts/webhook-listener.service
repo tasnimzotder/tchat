@@ -1,0 +1,12 @@
+[Unit]
+Description=Webhook Listener Service
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/app
+ExecStart=/usr/bin/python3 webhook_listener.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

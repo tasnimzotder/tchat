@@ -1,0 +1,19 @@
+---
+- name: Deploy Program Files to the DO Droplets
+  hosts: droplets
+
+  tasks:
+    - name: Copy the program files & scripts to the droplets
+      copy:
+        src: "{{ item }}"
+        dest: /app/
+      with_fileglob:
+        - ./../../webhook/webhook_listener.py
+        - ./../../scripts/Makefile
+
+    - name: Copy service files to the droplets
+      copy:
+        src: "{{ item }}"
+        dest: /etc/systemd/system/
+      with_fileglob:
+        - ./../../scripts/webhook-listener.service

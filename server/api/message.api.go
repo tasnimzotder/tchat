@@ -2,106 +2,91 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
-	"github.com/gorilla/websocket"
-	"log"
+	"github.com/tasnimzotder/tchat/server/models"
+	"github.com/tasnimzotder/tchat/server/utils"
 	"net/http"
+	"time"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin:     func(r *http.Request) bool { return true },
-}
+func (s *ServerAPI) sendMessageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		utils.ErrorResponse(w, "method not allowed", nil)
 
-type Message struct {
-	SenderID    string `json:"sender_id"`
-	RecipientID string `json:"recipient_id"`
-	MessageType string `json:"message_type"`
-	Payload     string `json:"payload"`
-}
-
-func (s *ServerAPI) messageHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("Failed to upgrade connection: %v", err)
 		return
 	}
-	defer func(conn *websocket.Conn) {
-		err := conn.Close()
-		if err != nil {
-			log.Printf("Failed to close connection: %v", err)
-			return
-		}
 
-		// remove connection
-		delete(s.Connections, conn.RemoteAddr().String())
-	}(conn)
+	var message models.Message
 
-	// read message
-	for {
-		_, msgBytes, err := conn.ReadMessage()
-		if err != nil {
-			log.Printf("Failed to read message: %v", err)
-			break
-		}
+	err := json.NewDecoder(r.Body).Decode(&message)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		utils.ErrorResponse(w, "", err)
 
-		var msg Message
-		err = json.Unmarshal(msgBytes, &msg)
-		if err != nil {
-			log.Printf("Failed to unmarshal message: %v", err)
-			break
-		}
-
-		// store connection
-		s.Connections[conn.RemoteAddr().String()] = ConnStruct{
-			Conn:   conn,
-			UserID: msg.SenderID,
-		}
-
-		// ping message
-		if msg.MessageType == "ping" {
-			continue
-		}
-
-		//	send message to recipient if online
-		recipientConn, err := s.getRecipientConn(msg.RecipientID)
-		if err != nil {
-			log.Printf("Failed to get recipient connection: %v", err)
-			continue
-		}
-
-		err = sendWSMessage(recipientConn, msg)
-		if err != nil {
-			log.Printf("Failed to send message: %v", err)
-			continue
-		}
+		return
 	}
+
+	if message.SenderID == "" || message.RecipientID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		utils.ErrorResponse(w, "sender or receiver id is missing", nil)
+
+		return
+	}
+
+	defer r.Body.Close()
+
+	message.Timestamp = time.Now().Format(time.RFC3339)
+
+	// store message in the message stack
+	s.MessageStacks[message.RecipientID] = append(s.MessageStacks[message.RecipientID], message)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(struct {
+		Response string         `json:"response"`
+		Message  models.Message `json:"message"`
+	}{
+		Response: "message sent successfully",
+		Message:  message,
+	})
 }
 
-func sendWSMessage(recipientConn ConnStruct, msg Message) error {
-	msgBytes, err := json.Marshal(msg)
-	if err != nil {
-		return err
+func (s *ServerAPI) getMessageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		utils.ErrorResponse(w, "method not allowed", nil)
+
+		return
 	}
 
-	err = recipientConn.Conn.WriteMessage(websocket.TextMessage, msgBytes)
-	if err != nil {
-		log.Printf("Failed to send message: %v", err)
-		return err
+	var recipientID = r.URL.Query().Get("id")
+
+	if recipientID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		utils.ErrorResponse(w, "recipient id is missing", nil)
+
+		return
 	}
 
-	return nil
-}
+	var messages []models.Message
 
-func (s *ServerAPI) getRecipientConn(recipientID string) (ConnStruct, error) {
-	//	return where UserID is recipientID
-	for _, v := range s.Connections {
-		if v.UserID == recipientID {
-			return v, nil
-		}
+	for _, message := range s.MessageStacks[recipientID] {
+		messages = append(messages, message)
 	}
 
-	//	return empty ConnStruct and error
-	return ConnStruct{}, errors.New("recipient is not online")
+	// if there are no messages return an empty array with status 204
+	if len(messages) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		_ = json.NewEncoder(w).Encode([]models.Message{})
+
+		return
+	}
+
+	// clear the message stack
+	s.MessageStacks[recipientID] = []models.Message{}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	_ = json.NewEncoder(w).Encode(messages)
 }
