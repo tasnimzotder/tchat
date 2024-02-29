@@ -1,0 +1,45 @@
+---
+- name: Install Dependencies on the DO Droplets
+  hosts: droplets
+
+  tasks:
+    - name: Update apt cache and install dependencies
+      become: yes
+      apt:
+        name: "{{ packages }}"
+        state: latest
+        update_cache: yes
+      vars:
+        packages:
+          - curl
+          - git
+          - ca-certificates
+          - apt-transport-https
+          - software-properties-common
+
+    - name: Add Docker GPG key
+      become: yes
+      apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+      when: ansible_distribution == "Debian"
+
+    - name: Add Docker Repository
+      become: yes
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable
+        state: present
+
+    - name: Install Docker
+      become: yes
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    - name: Ensure Docker is running
+      become: yes
+      service:
+        name: docker
+        state: started
+        enabled: yes
