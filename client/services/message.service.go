@@ -3,11 +3,12 @@ package services
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/tasnimzotder/tchat/client/models"
-	"github.com/tasnimzotder/tchat/client/utils"
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/tasnimzotder/tchat/client/models"
+	"github.com/tasnimzotder/tchat/client/utils"
 )
 
 func GetMessages() ([]models.Message, error) {
@@ -19,7 +20,7 @@ func GetMessages() ([]models.Message, error) {
 
 	u := url.URL{
 		Scheme: "http",
-		Host:   "localhost:8080",
+		Host:   utils.GetEnvVariable("SERVER_HOST"),
 		Path:   "/v1/message/get",
 	}
 
@@ -30,7 +31,6 @@ func GetMessages() ([]models.Message, error) {
 
 	resp, err := http.Get(u.String())
 	if err != nil {
-		log.Printf("Failed to get messages: %v", err)
 		return nil, err
 	}
 
@@ -38,7 +38,6 @@ func GetMessages() ([]models.Message, error) {
 
 	//if response status code is not 200
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("Failed to get messages: %v", resp.StatusCode)
 		return nil, err
 	}
 
@@ -46,23 +45,21 @@ func GetMessages() ([]models.Message, error) {
 	err = json.NewDecoder(resp.Body).Decode(&messages)
 
 	if err != nil {
-		log.Printf("Failed to decode messages: %v", err)
 		return nil, err
 	}
 
 	return messages, nil
 }
 
-func SendMessage(recipientID, message, messageType string) error {
+func SendMessage(recipientID, messageType, message string) error {
 	config, err := utils.ReadFromConfigFile()
 	if err != nil {
-		log.Printf("Failed to read config file: %v", err)
 		return err
 	}
 
 	u := url.URL{
 		Scheme: "http",
-		Host:   "localhost:8080",
+		Host:   utils.GetEnvVariable("SERVER_HOST"),
 		Path:   "/v1/message/send",
 	}
 
@@ -75,7 +72,6 @@ func SendMessage(recipientID, message, messageType string) error {
 
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
-		log.Printf("Failed to marshal message: %v", err)
 		return err
 	}
 
@@ -86,7 +82,6 @@ func SendMessage(recipientID, message, messageType string) error {
 	)
 
 	if err != nil {
-		log.Printf("Failed to send message: %v", err)
 		return err
 	}
 
@@ -94,7 +89,6 @@ func SendMessage(recipientID, message, messageType string) error {
 
 	//if response status code is not 201
 	if resp.StatusCode != http.StatusCreated {
-		log.Printf("Failed to send message: %v", resp.StatusCode)
 		return err
 	}
 

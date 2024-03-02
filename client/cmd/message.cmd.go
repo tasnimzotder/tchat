@@ -1,15 +1,16 @@
 package cmd
 
 import (
+	"log"
+	"strconv"
+
 	"github.com/spf13/cobra"
 	"github.com/tasnimzotder/tchat/client/services"
 	"github.com/tasnimzotder/tchat/client/utils"
-	"log"
-	"strconv"
 )
 
 var messageCmd = &cobra.Command{
-	Use:   "m",
+	Use:   "msg",
 	Short: "Message related commands",
 	Long:  `Message related commands`,
 	Run:   MessageCmd,
@@ -38,7 +39,7 @@ func MessageCmd(cmd *cobra.Command, args []string) {
 
 	messages, err := services.GetMessages()
 	if err != nil {
-		log.Printf("Failed to get messages: %v", err)
+		log.Printf("No new messages!")
 		return
 	}
 

@@ -3,3 +3,6 @@ build:
 
 bin:
 	sudo cp bin/tchat /usr/local/bin/
+
+test:
+	go test -v -count=1 ./... -cover

@@ -2,6 +2,14 @@
 
 Terminal chat application for developers
 
+## Features
+
+- [x] Send text messages 
+- [ ] Send files and images
+- [ ] Secure authentication
+- [ ] End-to-end encryption
+- [ ] Live chat
+
 ## Installation
 
 Git clone the repository and run the following commands:

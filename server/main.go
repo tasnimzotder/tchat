@@ -6,5 +6,5 @@ import (
 
 func main() {
 	server := api.NewServerAPI()
-	server.Start("8080")
+	server.Start("5050")
 }
