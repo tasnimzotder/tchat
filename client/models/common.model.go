@@ -11,9 +11,16 @@ type Message struct {
 type Config struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+	Key  string `json:"key"`
 }
 
 type User struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type Contact struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Key  string `json:"key"`
 }

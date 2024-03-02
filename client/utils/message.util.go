@@ -2,9 +2,10 @@ package utils
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/olekukonko/tablewriter"
 	"github.com/tasnimzotder/tchat/client/models"
-	"os"
 )
 
 func DisplayMessages(limit int) {
@@ -24,27 +25,47 @@ func DisplayMessages(limit int) {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Sender ID", "Timestamp", "Message"})
+	table.SetHeader([]string{"Sender", "Timestamp", "Type", "Message"})
 	table.SetBorder(false)
 	table.SetAutoWrapText(false)
 	//table.SetColWidth(1000)
+	table.SetHeaderColor(
+		tablewriter.Colors{tablewriter.FgBlueColor},
+		tablewriter.Colors{tablewriter.FgBlueColor},
+		tablewriter.Colors{tablewriter.FgBlueColor},
+		tablewriter.Colors{tablewriter.FgBlueColor},
+	)
 
 	for i := len(messages) - 1; i >= len(messages)-limit; i-- {
 		displayMessage(table, messages[i])
 	}
 
+	// insert a new line
+	fmt.Println()
 	table.Render()
-
 }
 
 func displayMessage(table *tablewriter.Table, message models.Message) {
+	// get contact details
+	contact, err := GetContactByID(message.SenderID)
+	if err != nil {
+		fmt.Println("Failed to get contact details")
+		return
+	}
+
+	privateKey, err := GetPrivateKey()
+	if err != nil {
+		fmt.Println("Failed to get private key")
+		return
+	}
+
 	decodedBytes, err := DecodeBase64(message.Payload)
 	if err != nil {
 		fmt.Println("Failed to decode message")
 		return
 	}
 
-	decryptedBytes, err := DecryptMessage(decodedBytes)
+	decryptedBytes, err := DecryptMessage(decodedBytes, privateKey)
 	if err != nil {
 		fmt.Println("Failed to decrypt message")
 		return
@@ -57,10 +78,11 @@ func displayMessage(table *tablewriter.Table, message models.Message) {
 		message.Payload = message.Payload[:32] + "..."
 	}
 
-	// sender id, show only last 5 characters
-	if len(message.SenderID) > 5 {
-		message.SenderID = "..." + message.SenderID[len(message.SenderID)-5:]
+	// contact name, show only first 6 characters
+	if len(contact.Name) > 6 {
+		contact.Name = contact.Name[:6] + "..."
+
 	}
 
-	table.Append([]string{message.SenderID, message.Timestamp, message.Payload})
+	table.Append([]string{contact.Name, message.Timestamp, message.MessageType, message.Payload})
 }

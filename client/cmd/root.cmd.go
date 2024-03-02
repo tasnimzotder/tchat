@@ -12,7 +12,8 @@ func Execute() error {
 }
 
 func init() {
-	rootCmd.AddCommand(sendCmd)
 	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(sendCmd)
 	rootCmd.AddCommand(messageCmd)
+	rootCmd.AddCommand(contactCmd)
 }

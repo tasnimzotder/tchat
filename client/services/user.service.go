@@ -3,17 +3,18 @@ package services
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/tasnimzotder/tchat/client/models"
-	"github.com/tasnimzotder/tchat/client/utils"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/tasnimzotder/tchat/client/models"
+	"github.com/tasnimzotder/tchat/client/utils"
 )
 
-func InitializeNewConnection(username string) {
+func InitializeNewConnection(name string) {
 	body := models.User{
-		Name: username,
+		Name: name,
 	}
 
 	// convert to io.Reader
@@ -47,6 +48,18 @@ func InitializeNewConnection(username string) {
 	err = json.NewDecoder(post.Body).Decode(&response)
 	if err != nil {
 		log.Printf("Failed to decode response: %v", err)
+		return
+	}
+
+	// handle RSA key
+	privateKey, publicKey, err := utils.GenerateKeyPair(2048)
+	if err != nil {
+		log.Printf("Failed to generate key pair: %v", err)
+		return
+	}
+
+	err = utils.StoreRSAKeys(privateKey, publicKey)
+	if err != nil {
 		return
 	}
 
