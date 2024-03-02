@@ -1,0 +1,34 @@
+http:
+  routers:
+    api-router:
+      rule: Host(`api.tchat.tasnim.dev`)
+      service: api-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: staging
+      middlewares:
+        - test-ratelimit
+        - test-retry
+
+  services:
+    api-service:
+      loadBalancer:
+        healthCheck:
+          path: "/health"
+          interval: 10s
+          timeout: 2s
+        servers:
+          - url: "http://api:5050"
+
+  middlewares:
+    test-ratelimit:
+      rateLimit:
+        average: 1
+        burst: 2
+        period: 1s
+
+    test-retry:
+      retry:
+        attempts: 4
+        initialInterval: 100ms

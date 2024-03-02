@@ -1,0 +1,59 @@
+version: "3"
+
+services:
+  api:
+    container_name: api
+    build:
+      context: ./server
+    #      target: final
+    expose:
+      - 5050
+    labels:
+      - traefik.enable=true
+    networks:
+      - tchat-net
+
+  #  influxdb:
+  #    container_name: influxdb
+  #    image: influxdb:2.7
+  #    restart: on-failure
+  #    environment:
+  #      - DOCKER_INFLUXDB_INIT_MODE=setup
+  #      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+  #      - DOCKER_INFLUXDB_INIT_PASSWORD=password
+  #      - DOCKER_INFLUXDB_INIT_ORG=xtasnim
+  #      - DOCKER_INFLUXDB_INIT_BUCKET=xbucket
+  #      - DOCKER_INFLUXDB_INIT_RETENTION=1w
+  #    expose:
+  #      - 8086
+  #    ports:
+  #      - 8086:8086
+  #    volumes:
+  #      - influxdb:/var/lib/influxdb2
+  #    networks:
+  #      - tchat-net
+
+  traefik:
+    container_name: traefik
+    image: traefik:2.11
+    restart: on-failure
+    command:
+      - --configFile=traefik.yml
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./dynamic_conf:/etc/traefik/dynamic_conf
+      - ./acme.json:/acme.json
+    networks:
+      - tchat-net
+
+networks:
+  tchat-net:
+    driver: bridge
+
+volumes:
+  influxdb:

@@ -116,3 +116,5 @@ fabric.properties
 
 bin
 
+acme.json
+.env

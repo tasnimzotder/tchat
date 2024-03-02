@@ -1,0 +1,57 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+api:
+  dashboard: true
+  insecure: true
+  debug: true
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: tchat-net
+
+  file:
+    directory: /etc/traefik/dynamic_conf
+    watch: true
+
+
+#metrics:
+#  influxDB2:
+#    address: http://influxdb:8086
+#    # todo: move the token to a secret
+#    token: '`{{ env "TCHAT_INFLUXDB2_TOKEN" }}`'
+#    org: xtasnim
+#    bucket: xbucket
+#    addEntryPointsLabels: true
+#    addRoutersLabels: true
+#    addServicesLabels: true
+#    pushInterval: 1s
+
+certificatesResolvers:
+  staging:
+    acme:
+      email: hello@tasnim.dev
+      storage: acme.json
+      caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+      httpChallenge:
+        entryPoint: web
+      tlsChallenge: { }
+
+  production:
+    acme:
+      email: hello@tasnim.dev
+      storage: acme.json
+      caServer: https://acme-v02.api.letsencrypt.org/directory
+      httpChallenge:
+        entryPoint: web
+      tlsChallenge: { }
+
