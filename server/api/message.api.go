@@ -2,10 +2,11 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/tasnimzotder/tchat/server/models"
-	"github.com/tasnimzotder/tchat/server/utils"
 	"net/http"
 	"time"
+
+	"github.com/tasnimzotder/tchat/server/models"
+	"github.com/tasnimzotder/tchat/server/utils"
 )
 
 func (s *ServerAPI) sendMessageHandler(w http.ResponseWriter, r *http.Request) {

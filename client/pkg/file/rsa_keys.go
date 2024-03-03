@@ -4,8 +4,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"io"
+	"log"
 	"os"
+
+	"github.com/tasnimzotder/tchat/client/pkg/crypto"
 )
 
 // StoreRSAKeys RSA keys store
@@ -48,30 +50,37 @@ func StoreRSAKeys(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) error {
 	return nil
 }
 
-func StoreContactPublicKey(userID string, srcKeyPath string) (string, error) {
+func StoreContactPublicKey(userID string, publicKey string) (string, error) {
 	destFileName := getConfigDir() + "/contact_keys/" + userID + ".pem"
 
-	//	copy the file to the target directory
-	srcFile, err := os.Open(srcKeyPath)
-	if err != nil {
-		return "", err
-	}
-	defer srcFile.Close()
+	log.Printf("Public key: %s", publicKey)
 
-	//	create the destination file
-	destFile, err := os.Create(destFileName)
+	var encryptioner crypto.Encryptioner = &crypto.RSAEncryption{}
+
+	decodedPublicKey, err := encryptioner.DecodeBase64(publicKey)
 	if err != nil {
 		return "", err
 	}
 
-	defer destFile.Close()
+	log.Printf("Decoded public key: %s", decodedPublicKey)
 
-	//	copy the file
-	_, err = io.Copy(destFile, srcFile)
+	pemBlock := &pem.Block{
+		Type:  "RSA PUBLIC KEY",
+		Bytes: decodedPublicKey,
+	}
 
+	pemFile, err := os.Create(destFileName)
 	if err != nil {
 		return "", err
 	}
+	defer pemFile.Close()
+
+	err = pem.Encode(pemFile, pemBlock)
+	if err != nil {
+		return "", err
+	}
+
+	log.Printf("Public key stored at: %s", destFileName)
 
 	return destFileName, nil
 }
@@ -119,4 +128,21 @@ func GetPrivateKey() (*rsa.PrivateKey, error) {
 	}
 
 	return privateKey, nil
+}
+
+func GetPublicRSAKey() (*rsa.PublicKey, error) {
+	publicFileName := getConfigDir() + "/keys/public.pem"
+
+	contents, err := GetFileContents(publicFileName)
+	if err != nil {
+		return nil, err
+	}
+
+	block, _ := pem.Decode(contents)
+	publicKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return publicKey, nil
 }

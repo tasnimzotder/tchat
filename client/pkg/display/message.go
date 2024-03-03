@@ -1,4 +1,4 @@
-package message
+package display
 
 import (
 	"fmt"
@@ -8,13 +8,11 @@ import (
 	"github.com/tasnimzotder/tchat/client/models"
 	"github.com/tasnimzotder/tchat/client/pkg/crypto"
 	"github.com/tasnimzotder/tchat/client/pkg/file"
-	"github.com/tasnimzotder/tchat/client/pkg/util"
 )
 
 func DisplayMessages(limit int) {
 	messages, err := file.ReadFromMessagesFile()
 	if err != nil {
-		//log.Printf("Failed to read from messages file: %v", err)
 		fmt.Println("No messages to display")
 		return
 	}
@@ -40,15 +38,6 @@ func DisplayMessages(limit int) {
 	)
 
 	for i := len(messages) - 1; i >= len(messages)-limit; i-- {
-		_plainTextMessage := plainTextMessage(messages[i].Payload)
-		if _plainTextMessage != "" {
-			messages[i].Payload = _plainTextMessage
-		}
-
-		if i == len(messages)-1 {
-			util.CopyToClipboard(messages[i].Payload)
-		}
-
 		displayMessage(table, messages[i])
 	}
 
@@ -57,32 +46,8 @@ func DisplayMessages(limit int) {
 	table.Render()
 }
 
-func plainTextMessage(payload string) string {
-	var encryption crypto.Encryptioner = &crypto.RSAEncryption{}
-
-	privateKey, err := file.GetPrivateKey()
-	if err != nil {
-		fmt.Println("Failed to get private key")
-		return ""
-	}
-
-	decodedBytes, err := encryption.DecodeBase64(payload)
-	if err != nil {
-		fmt.Println("Failed to decode message")
-		return ""
-	}
-
-	decryptedBytes, err := encryption.DecryptMessage(decodedBytes, privateKey)
-	if err != nil {
-		fmt.Println("Failed to decrypt message")
-		return ""
-	}
-
-	return string(decryptedBytes)
-}
-
 func displayMessage(table *tablewriter.Table, message models.Message) {
-	//var encryption crypto.Encryptioner = &crypto.RSAEncryption{}
+	var encryption crypto.Encryptioner = &crypto.RSAEncryption{}
 
 	// get contact details
 	contact, err := file.GetContactByID(message.SenderID)
@@ -90,6 +55,26 @@ func displayMessage(table *tablewriter.Table, message models.Message) {
 		fmt.Println("Failed to get contact details")
 		return
 	}
+
+	privateKey, err := file.GetPrivateKey()
+	if err != nil {
+		fmt.Println("Failed to get private key")
+		return
+	}
+
+	decodedBytes, err := encryption.DecodeBase64(message.Payload)
+	if err != nil {
+		fmt.Println("Failed to decode message")
+		return
+	}
+
+	decryptedBytes, err := encryption.DecryptMessage(decodedBytes, privateKey)
+	if err != nil {
+		fmt.Println("Failed to decrypt message")
+		return
+	}
+
+	message.Payload = string(decryptedBytes)
 
 	// trim message if it's too long
 	if len(message.Payload) > 15 {
