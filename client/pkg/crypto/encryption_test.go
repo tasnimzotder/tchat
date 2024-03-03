@@ -1,4 +1,4 @@
-package utils
+package crypto
 
 import (
 	"crypto/rand"
@@ -10,11 +10,12 @@ import (
 )
 
 func TestGenerateKeyPair(t *testing.T) {
+	var encryption Encryptioner = &RSAEncryption{}
 	bits := []int{1024, 2048}
 
 	for _, bit := range bits {
 		t.Run(fmt.Sprintf("%d bits", bit), func(t *testing.T) {
-			privateKey, publicKey, err := GenerateKeyPair(bit)
+			privateKey, publicKey, err := encryption.GenerateKeyPair(bit)
 
 			assert.NoError(t, err)
 			assert.NotNil(t, privateKey)
@@ -24,7 +25,8 @@ func TestGenerateKeyPair(t *testing.T) {
 }
 
 func TestGenerateKeyPairErrors(t *testing.T) {
-	_, _, err := GenerateKeyPair(0)
+	var encryption Encryptioner = &RSAEncryption{}
+	_, _, err := encryption.GenerateKeyPair(0)
 
 	assert.Error(t, err)
 }
@@ -79,24 +81,26 @@ func TestEncryptDecryptMessage(t *testing.T) {
 	// 4. decode base64 to cipher text
 	// 5. decrypt cipher text
 
-	privateKey, publicKey, err := GenerateKeyPair(2048)
+	var encryption Encryptioner = &RSAEncryption{}
+
+	privateKey, publicKey, err := encryption.GenerateKeyPair(2048)
 	assert.NoError(t, err)
 
 	plaintext := []byte("test")
 
 	// encrypt
-	cipherBytes, err := EncryptMessage(plaintext, publicKey)
+	cipherBytes, err := encryption.EncryptMessage(plaintext, publicKey)
 	assert.NoError(t, err)
 
-	encodedBytes := EncodeBase64(cipherBytes)
+	encodedBytes := encryption.EncodeBase64(cipherBytes)
 	assert.NotEmpty(t, encodedBytes)
 
 	// decrypt
-	decodedBytes, err := DecodeBase64(encodedBytes)
+	decodedBytes, err := encryption.DecodeBase64(encodedBytes)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, decodedBytes)
 
-	decrypted, err := DecryptMessage(decodedBytes, privateKey)
+	decrypted, err := encryption.DecryptMessage(decodedBytes, privateKey)
 	assert.NoError(t, err)
 
 	assert.Equal(t, plaintext, decrypted, "Round trip failed, got %s, want %s", decrypted, plaintext)

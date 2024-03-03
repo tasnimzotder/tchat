@@ -1,4 +1,4 @@
-package utils
+package crypto
 
 import (
 	"crypto/aes"
@@ -7,11 +7,29 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"io"
 	"log"
 )
 
+type Encryptioner interface {
+	GenerateKeyPair(bits int) (*rsa.PrivateKey, *rsa.PublicKey, error)
+	EncryptMessage(message []byte, publicKey *rsa.PublicKey) ([]byte, error)
+	DecryptMessage(cipherText []byte, privateKey *rsa.PrivateKey) ([]byte, error)
+	EncodeBase64(data []byte) string
+	DecodeBase64(data string) ([]byte, error)
+}
+
+type RSAEncryption struct{}
+
 func aesEncryptMessage(message, key []byte) ([]byte, error) {
+	//validate key length
+	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
+		log.Printf("Invalid key length: %d", len(key))
+		return nil, errors.New("invalid key length")
+	}
+
+	//create new cipher block
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		log.Printf("Error creating cipher: %v", err)
@@ -59,12 +77,12 @@ func aesDecryptMessage(cipherText, key []byte) ([]byte, error) {
 	return plainText, nil
 }
 
-func EncodeBase64(data []byte) string {
+func (r *RSAEncryption) EncodeBase64(data []byte) string {
 	encodedData := base64.StdEncoding.EncodeToString(data)
 	return encodedData
 }
 
-func DecodeBase64(data string) ([]byte, error) {
+func (r *RSAEncryption) DecodeBase64(data string) ([]byte, error) {
 	decodedData, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
 		return nil, err
@@ -74,7 +92,7 @@ func DecodeBase64(data string) ([]byte, error) {
 }
 
 // GenerateKeyPair RSA encryption
-func GenerateKeyPair(bits int) (*rsa.PrivateKey, *rsa.PublicKey, error) {
+func (r *RSAEncryption) GenerateKeyPair(bits int) (*rsa.PrivateKey, *rsa.PublicKey, error) {
 	// generate private key
 	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
@@ -95,7 +113,7 @@ func GenerateKeyPair(bits int) (*rsa.PrivateKey, *rsa.PublicKey, error) {
 
 // encryption
 
-func EncryptMessage(message []byte, publicKey *rsa.PublicKey) ([]byte, error) {
+func (r *RSAEncryption) EncryptMessage(message []byte, publicKey *rsa.PublicKey) ([]byte, error) {
 	aesKey := make([]byte, 32) // 256-bit key
 	if _, err := rand.Read(aesKey); err != nil {
 		return nil, err
@@ -115,7 +133,7 @@ func EncryptMessage(message []byte, publicKey *rsa.PublicKey) ([]byte, error) {
 	return append(encryptedKey, cipherText...), nil
 }
 
-func DecryptMessage(cipherText []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
+func (r *RSAEncryption) DecryptMessage(cipherText []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
 	encryptedKeySize := privateKey.Size()
 	encryptedKey := cipherText[:encryptedKeySize]
 	aesCipherText := cipherText[encryptedKeySize:]

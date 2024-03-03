@@ -1,4 +1,4 @@
-package services
+package internal
 
 import (
 	"bytes"
@@ -8,11 +8,12 @@ import (
 	"net/url"
 
 	"github.com/tasnimzotder/tchat/client/models"
-	"github.com/tasnimzotder/tchat/client/utils"
+	"github.com/tasnimzotder/tchat/client/pkg/config"
+	"github.com/tasnimzotder/tchat/client/pkg/file"
 )
 
 func GetMessages() ([]models.Message, error) {
-	config, err := utils.ReadFromConfigFile()
+	configuration, err := file.ReadFromConfigFile()
 	if err != nil {
 		log.Printf("Failed to read config file: %v", err)
 		return nil, err
@@ -20,13 +21,13 @@ func GetMessages() ([]models.Message, error) {
 
 	u := url.URL{
 		Scheme: "http",
-		Host:   utils.GetEnvVariable("SERVER_HOST"),
+		Host:   config.GetEnvVariable("SERVER_HOST"),
 		Path:   "/v1/message/get",
 	}
 
 	params := url.Values{}
 
-	params.Add("id", config.ID)
+	params.Add("id", configuration.ID)
 	u.RawQuery = params.Encode()
 
 	resp, err := http.Get(u.String())
@@ -52,19 +53,19 @@ func GetMessages() ([]models.Message, error) {
 }
 
 func SendMessage(recipientID, messageType, message string) error {
-	config, err := utils.ReadFromConfigFile()
+	configuration, err := file.ReadFromConfigFile()
 	if err != nil {
 		return err
 	}
 
 	u := url.URL{
 		Scheme: "http",
-		Host:   utils.GetEnvVariable("SERVER_HOST"),
+		Host:   config.GetEnvVariable("SERVER_HOST"),
 		Path:   "/v1/message/send",
 	}
 
 	body := models.Message{
-		SenderID:    config.ID,
+		SenderID:    configuration.ID,
 		RecipientID: recipientID,
 		Payload:     message,
 		MessageType: messageType,

@@ -5,8 +5,9 @@ import (
 	"strconv"
 
 	"github.com/spf13/cobra"
-	"github.com/tasnimzotder/tchat/client/services"
-	"github.com/tasnimzotder/tchat/client/utils"
+	"github.com/tasnimzotder/tchat/client/internal"
+	"github.com/tasnimzotder/tchat/client/pkg/file"
+	"github.com/tasnimzotder/tchat/client/pkg/message"
 )
 
 var messageCmd = &cobra.Command{
@@ -27,7 +28,7 @@ func MessageCmd(cmd *cobra.Command, args []string) {
 		clearValue, _ := cmd.Flags().GetString("clear")
 
 		if clearValue == "all" {
-			err := utils.ClearMessagesFile()
+			err := file.ClearMessagesFile()
 			if err != nil {
 				log.Printf("Failed to clear messages file: %v", err)
 				return
@@ -37,14 +38,14 @@ func MessageCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	messages, err := services.GetMessages()
+	messages, err := internal.GetMessages()
 	if err != nil {
 		log.Printf("No new messages!")
 		return
 	}
 
 	for _, message := range messages {
-		err = utils.AppendToMessagesFile(message)
+		err = file.AppendToMessagesFile(message)
 		if err != nil {
 			log.Printf("Failed to write to messages file: %v", err)
 			return
@@ -56,9 +57,9 @@ func MessageCmd(cmd *cobra.Command, args []string) {
 		displayValue, _ := cmd.Flags().GetString("display")
 
 		limit, _ := strconv.Atoi(displayValue)
-		utils.DisplayMessages(limit)
+		message.DisplayMessages(limit)
 	} else {
-		utils.DisplayMessages(10)
+		message.DisplayMessages(10)
 	}
 
 }

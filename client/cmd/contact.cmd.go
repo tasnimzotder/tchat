@@ -7,7 +7,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/tasnimzotder/tchat/client/models"
-	"github.com/tasnimzotder/tchat/client/utils"
+	"github.com/tasnimzotder/tchat/client/pkg/file"
 )
 
 var contactCmd = &cobra.Command{
@@ -69,7 +69,7 @@ func ContactCmd(cmd *cobra.Command, args []string) {
 	dir, _ := os.Getwd()
 	keyPath := dir + "/" + key
 
-	destKeyPath, err := utils.StoreContactPublicKey(id, keyPath)
+	destKeyPath, err := file.StoreContactPublicKey(id, keyPath)
 	if err != nil {
 		log.Printf("Failed to store contact public key: %v", err)
 		return
@@ -81,7 +81,7 @@ func ContactCmd(cmd *cobra.Command, args []string) {
 		Key:  destKeyPath,
 	}
 
-	err = utils.WriteToContactFile(contact)
+	err = file.WriteToContactFile(contact)
 	if err != nil {
 		log.Printf("Failed to write to contact file: %v", err)
 		return

@@ -8,8 +8,9 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/tasnimzotder/tchat/client/services"
-	"github.com/tasnimzotder/tchat/client/utils"
+	"github.com/tasnimzotder/tchat/client/internal"
+	"github.com/tasnimzotder/tchat/client/pkg/crypto"
+	"github.com/tasnimzotder/tchat/client/pkg/file"
 )
 
 var sendCmd = &cobra.Command{
@@ -44,7 +45,7 @@ func SendCmd(cmd *cobra.Command, args []string) {
 
 			filePath := dir + "/" + fileValue
 
-			messageByte, err := utils.GetFileContents(filePath)
+			messageByte, err := file.GetFileContents(filePath)
 			if err != nil {
 				log.Printf("Failed to read file: %v", err)
 				return
@@ -96,27 +97,29 @@ func SendCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// get contact details
-	contact, err := utils.GetContactByName(recipientName)
+	contact, err := file.GetContactByName(recipientName)
 	if err != nil {
 		log.Printf("Failed to get contact: %v", err)
 		return
 	}
 
-	publicKey, err := utils.GetPublicKeyByUserID(contact.ID)
+	var encryption crypto.Encryptioner = &crypto.RSAEncryption{}
+
+	publicKey, err := file.GetPublicKeyByUserID(contact.ID)
 	if err != nil {
 		log.Printf("Failed to get public key: %v", err)
 		return
 	}
 
-	encryptedMessage, err := utils.EncryptMessage([]byte(message), publicKey)
+	encryptedMessage, err := encryption.EncryptMessage([]byte(message), publicKey)
 	if err != nil {
 		log.Printf("Failed to encrypt message: %v", err)
 		return
 	}
 
-	encodedMessage := utils.EncodeBase64(encryptedMessage)
+	encodedMessage := encryption.EncodeBase64(encryptedMessage)
 
-	err = services.SendMessage(contact.ID, messageType, encodedMessage)
+	err = internal.SendMessage(contact.ID, messageType, encodedMessage)
 	if err != nil {
 		log.Printf("Failed to send message: %v", err)
 		return
