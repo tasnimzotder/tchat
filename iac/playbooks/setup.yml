@@ -4,11 +4,11 @@
 
   tasks:
     - name: Update apt cache and install dependencies
-      become: yes
-      apt:
-        name: "{{ packages }}"
-        state: latest
-        update_cache: yes
+      become: true
+      ansible.builtin.apt:
+        name: '{{ packages }}'
+        state: present
+        update_cache: true
       vars:
         packages:
           - curl
@@ -20,28 +20,28 @@
           - python3-pip
 
     - name: Add Docker GPG key
-      become: yes
-      apt_key:
+      become: true
+      ansible.builtin.apt_key:
         url: https://download.docker.com/linux/debian/gpg
         state: present
       when: ansible_distribution == "Debian"
 
     - name: Add Docker Repository
-      become: yes
-      apt_repository:
+      become: true
+      ansible.builtin.apt_repository:
         repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable
         state: present
 
     - name: Install Docker
-      become: yes
-      apt:
+      become: true
+      ansible.builtin.apt:
         name: docker-ce
         state: present
-        update_cache: yes
+        update_cache: true
 
     - name: Ensure Docker is running
-      become: yes
-      service:
+      become: true
+      ansible.builtin.service:
         name: docker
         state: started
-        enabled: yes
+        enabled: true

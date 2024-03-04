@@ -11,6 +11,9 @@ import (
 	"github.com/tasnimzotder/tchat/client/pkg/config"
 )
 
+// StartConnection establishes a connection and sends a connection request to the server.
+//
+// It takes a connection request model as a parameter and returns an error.
 func StartConnection(connectionRequest models.Connection) error {
 	u := url.URL{
 		Scheme: "http",
@@ -54,6 +57,10 @@ type GetConnectionRequest struct {
 	PassKey string `json:"pass_key"`
 }
 
+// GetConnection retrieves a connection using the provided GetConnectionRequest.
+//
+// getConnectionRequest GetConnectionRequest
+// Connection, error
 func GetConnection(getConnectionRequest GetConnectionRequest) (models.Connection, error) {
 	u := url.URL{
 		Scheme: "http",

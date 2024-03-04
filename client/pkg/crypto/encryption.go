@@ -12,6 +12,7 @@ import (
 	"log"
 )
 
+// Encryptioner is an interface that defines the methods for encryption and decryption.
 type Encryptioner interface {
 	GenerateKeyPair(bits int) (*rsa.PrivateKey, *rsa.PublicKey, error)
 	EncryptMessage(message []byte, publicKey *rsa.PublicKey) ([]byte, error)
@@ -20,8 +21,12 @@ type Encryptioner interface {
 	DecodeBase64(data string) ([]byte, error)
 }
 
+// RSAEncryption is a struct that implements the Encryptioner interface using RSA encryption.
 type RSAEncryption struct{}
 
+// aesEncryptMessage encrypts a message using AES encryption.
+//
+// It takes in a message and a key as []byte and returns the encrypted message as []byte and an error.
 func aesEncryptMessage(message, key []byte) ([]byte, error) {
 	//validate key length
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
@@ -53,6 +58,9 @@ func aesEncryptMessage(message, key []byte) ([]byte, error) {
 	return cipherText, nil
 }
 
+// aesDecryptMessage decrypts a message using AES encryption.
+//
+// It takes in a cipherText and a key as []byte and returns the decrypted message as []byte and an error.
 func aesDecryptMessage(cipherText, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -77,11 +85,17 @@ func aesDecryptMessage(cipherText, key []byte) ([]byte, error) {
 	return plainText, nil
 }
 
+// EncodeBase64 encodes a byte array to a base64 string.
+//
+// It takes in a data as []byte and returns the encoded string.
 func (r *RSAEncryption) EncodeBase64(data []byte) string {
 	encodedData := base64.StdEncoding.EncodeToString(data)
 	return encodedData
 }
 
+// DecodeBase64 decodes a base64 string to a byte array.
+//
+// It takes in a data as string and returns the decoded byte array and an error.
 func (r *RSAEncryption) DecodeBase64(data string) ([]byte, error) {
 	decodedData, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
@@ -91,7 +105,9 @@ func (r *RSAEncryption) DecodeBase64(data string) ([]byte, error) {
 	return decodedData, nil
 }
 
-// GenerateKeyPair RSA encryption
+// GenerateKeyPair generates a new RSA key pair.
+//
+// It takes in the number of bits for the key and returns the private key, public key, and an error.
 func (r *RSAEncryption) GenerateKeyPair(bits int) (*rsa.PrivateKey, *rsa.PublicKey, error) {
 	// generate private key
 	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
@@ -111,8 +127,9 @@ func (r *RSAEncryption) GenerateKeyPair(bits int) (*rsa.PrivateKey, *rsa.PublicK
 	return privateKey, publicKey, nil
 }
 
-// encryption
-
+// EncryptMessage encrypts a message using RSA and AES encryption.
+//
+// It takes in a message as []byte and a public key as *rsa.PublicKey and returns the encrypted message as []byte and an error.
 func (r *RSAEncryption) EncryptMessage(message []byte, publicKey *rsa.PublicKey) ([]byte, error) {
 	aesKey := make([]byte, 32) // 256-bit key
 	if _, err := rand.Read(aesKey); err != nil {
@@ -133,6 +150,9 @@ func (r *RSAEncryption) EncryptMessage(message []byte, publicKey *rsa.PublicKey)
 	return append(encryptedKey, cipherText...), nil
 }
 
+// DecryptMessage decrypts a message using RSA and AES decryption.
+//
+// It takes in a cipherText as []byte and a private key as *rsa.PrivateKey and returns the decrypted message as []byte and an error.
 func (r *RSAEncryption) DecryptMessage(cipherText []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
 	encryptedKeySize := privateKey.Size()
 	encryptedKey := cipherText[:encryptedKeySize]

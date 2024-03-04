@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// tests
+
 func TestGenerateKeyPair(t *testing.T) {
 	var encryption Encryptioner = &RSAEncryption{}
 	bits := []int{1024, 2048}
@@ -104,4 +106,25 @@ func TestEncryptDecryptMessage(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, plaintext, decrypted, "Round trip failed, got %s, want %s", decrypted, plaintext)
+}
+
+// benchmarks
+func BenchmarkEncryptMessage(b *testing.B) {
+	var encryption Encryptioner = &RSAEncryption{}
+
+	_, publicKey, err := encryption.GenerateKeyPair(2048)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	plaintext := []byte("test")
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, err := encryption.EncryptMessage(plaintext, publicKey)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
 }
