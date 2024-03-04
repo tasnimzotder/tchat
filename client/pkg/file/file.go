@@ -19,3 +19,14 @@ func GetFileContents(fileName string) ([]byte, error) {
 
 	return contents, nil
 }
+
+func SaveFile(filePath string, data []byte) error {
+	err := os.WriteFile(filePath, data, 0644)
+
+	if err != nil {
+		log.Printf("Failed to save file: %v", err)
+		return err
+	}
+
+	return nil
+}

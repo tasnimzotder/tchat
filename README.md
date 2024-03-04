@@ -57,15 +57,16 @@ tchat conn
 | Command | Description              | Example                                 |
 | ------- | ------------------------ | --------------------------------------- |
 | `conn`  | Start or save connection | `tchat conn`                            |
-| `msg`   | Receive messages         | `tchat msg`                             |
+| `msg`   | Receive messages         | `tchat msg -d 1 -s hello.txt`           |
 | `send`  | Send messages            | `tchat send -r <receiver> -m <message>` |
 
 ### Message Command
 
-| Option | Description      | Example            |
-| ------ | ---------------- | ------------------ |
-| -c     | Clear the chat   | `tchat msg -c all` |
-| -d     | Display the chat | `tchat m -d 10`    |
+| Option | Description                      | Example                       |
+| ------ | -------------------------------- | ----------------------------- |
+| -c     | Clear the messages               | `tchat msg -c all`            |
+| -d     | Display a message (serialNumber) | `tchat m -d 2`                |
+| -s     | Save a message to file           | `tchat msg -d 2 -s hello.txt` |
 
 ### Send Command
 

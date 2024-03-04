@@ -104,3 +104,21 @@ func displayMessage(table *tablewriter.Table, message models.Message) {
 
 	table.Append([]string{contact.Name, message.Timestamp, message.MessageType, message.Payload})
 }
+
+func DisplaySingleMessageRaw(serialNumber int) models.Message {
+	messages, err := file.ReadFromMessagesFile()
+	if err != nil {
+		fmt.Println("No messages to display")
+		return models.Message{}
+	}
+
+	message := messages[len(messages)-serialNumber]
+
+	_plainTextMessage := plainTextMessage(message.Payload)
+
+	if _plainTextMessage != "" {
+		message.Payload = _plainTextMessage
+	}
+
+	return message
+}
