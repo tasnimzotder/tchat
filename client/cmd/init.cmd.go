@@ -4,9 +4,10 @@ import (
 	"errors"
 	"log"
 
+	"github.com/tasnimzotder/tchat/client/internal"
+
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/tasnimzotder/tchat/client/services"
 )
 
 var initCmd = &cobra.Command{
@@ -35,5 +36,5 @@ func InitCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	services.InitializeNewConnection(name)
+	internal.InitializeNewConnection(name)
 }

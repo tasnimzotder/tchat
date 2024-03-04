@@ -15,5 +15,5 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(sendCmd)
 	rootCmd.AddCommand(messageCmd)
-	rootCmd.AddCommand(contactCmd)
+	rootCmd.AddCommand(connectionCmd)
 }

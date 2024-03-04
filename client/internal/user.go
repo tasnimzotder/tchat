@@ -1,4 +1,4 @@
-package services
+package internal
 
 import (
 	"bytes"
@@ -9,7 +9,9 @@ import (
 	"net/url"
 
 	"github.com/tasnimzotder/tchat/client/models"
-	"github.com/tasnimzotder/tchat/client/utils"
+	"github.com/tasnimzotder/tchat/client/pkg/config"
+	"github.com/tasnimzotder/tchat/client/pkg/crypto"
+	"github.com/tasnimzotder/tchat/client/pkg/file"
 )
 
 func InitializeNewConnection(name string) {
@@ -22,7 +24,7 @@ func InitializeNewConnection(name string) {
 
 	u := url.URL{
 		Scheme: "http",
-		Host:   utils.GetEnvVariable("SERVER_HOST"),
+		Host:   config.GetEnvVariable("SERVER_HOST"),
 		Path:   "/v1/user/create",
 	}
 
@@ -51,20 +53,22 @@ func InitializeNewConnection(name string) {
 		return
 	}
 
+	var encryption crypto.Encryptioner = &crypto.RSAEncryption{}
+
 	// handle RSA key
-	privateKey, publicKey, err := utils.GenerateKeyPair(2048)
+	privateKey, publicKey, err := encryption.GenerateKeyPair(2048)
 	if err != nil {
 		log.Printf("Failed to generate key pair: %v", err)
 		return
 	}
 
-	err = utils.StoreRSAKeys(privateKey, publicKey)
+	err = file.StoreRSAKeys(privateKey, publicKey)
 	if err != nil {
 		return
 	}
 
 	// save user id to config
-	err = utils.WriteToConfigFile(models.Config{
+	err = file.WriteToConfigFile(models.Config{
 		ID:   response.ID,
 		Name: response.Name,
 	})

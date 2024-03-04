@@ -11,11 +11,17 @@ GIT_REPO = 'https://github.com/tasnimzotder/tchat.git'
 
 
 def read_and_strip(command):
+    """
+    Function to read and strip the input command and return the first line after splitting by newline and stripping any leading/trailing whitespaces.
+    """
     return command.read().split('\n')[0].strip()
 
 
 @app.route('/webhook', methods=['POST'])
 def handle_webhook():
+    """
+    Handle the webhook request and trigger the deployment process if the webhook is valid. Returns a status message and HTTP status code.
+    """
     if request.json and request.json.get('ref') == 'refs/heads/main':
         os.system("cd {}".format(WORK_DIR))
 
@@ -54,6 +60,9 @@ def handle_webhook():
 
 @app.route('/health', methods=['GET'])
 def health():
+    """
+    This function retrieves health information about the system and containers and returns the information along with a status code.
+    """
     os_name = os.popen('uname').read().split('\n')[0]
 
     system_info = {}

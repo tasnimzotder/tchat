@@ -4,9 +4,10 @@ http:
       rule: Host(`api.tchat.tasnim.dev`)
       service: api-service
       entryPoints:
-        - websecure
-      tls:
-        certResolver: staging
+        - web
+      #   - websecure
+      # tls:
+      #   certResolver: staging
       middlewares:
         - test-ratelimit
         - test-retry

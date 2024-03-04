@@ -1,4 +1,4 @@
-package utils
+package display
 
 import (
 	"fmt"
@@ -6,12 +6,13 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/tasnimzotder/tchat/client/models"
+	"github.com/tasnimzotder/tchat/client/pkg/crypto"
+	"github.com/tasnimzotder/tchat/client/pkg/file"
 )
 
 func DisplayMessages(limit int) {
-	messages, err := ReadFromMessagesFile()
+	messages, err := file.ReadFromMessagesFile()
 	if err != nil {
-		//log.Printf("Failed to read from messages file: %v", err)
 		fmt.Println("No messages to display")
 		return
 	}
@@ -46,26 +47,28 @@ func DisplayMessages(limit int) {
 }
 
 func displayMessage(table *tablewriter.Table, message models.Message) {
+	var encryption crypto.Encryptioner = &crypto.RSAEncryption{}
+
 	// get contact details
-	contact, err := GetContactByID(message.SenderID)
+	contact, err := file.GetContactByID(message.SenderID)
 	if err != nil {
 		fmt.Println("Failed to get contact details")
 		return
 	}
 
-	privateKey, err := GetPrivateKey()
+	privateKey, err := file.GetPrivateKey()
 	if err != nil {
 		fmt.Println("Failed to get private key")
 		return
 	}
 
-	decodedBytes, err := DecodeBase64(message.Payload)
+	decodedBytes, err := encryption.DecodeBase64(message.Payload)
 	if err != nil {
 		fmt.Println("Failed to decode message")
 		return
 	}
 
-	decryptedBytes, err := DecryptMessage(decodedBytes, privateKey)
+	decryptedBytes, err := encryption.DecryptMessage(decodedBytes, privateKey)
 	if err != nil {
 		fmt.Println("Failed to decrypt message")
 		return

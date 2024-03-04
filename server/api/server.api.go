@@ -10,14 +10,16 @@ import (
 )
 
 type ServerAPI struct {
-	Server        http.Server
-	MessageStacks map[string][]models.Message
+	Server           http.Server
+	MessageStacks    map[string][]models.Message
+	ConnectionStacks map[string]models.Connection
 }
 
 func NewServerAPI() *ServerAPI {
 	return &ServerAPI{
-		Server:        http.Server{},
-		MessageStacks: make(map[string][]models.Message),
+		Server:           http.Server{},
+		MessageStacks:    make(map[string][]models.Message),
+		ConnectionStacks: make(map[string]models.Connection),
 	}
 }
 
@@ -30,6 +32,10 @@ func (s *ServerAPI) Start(port string) {
 	http.HandleFunc("/v1/user/create", s.createUserHandler)
 	http.HandleFunc("/v1/message/send", s.sendMessageHandler)
 	http.HandleFunc("/v1/message/get", s.getMessageHandler)
+
+	// connection
+	http.HandleFunc("/v1/connection/set", s.setConnectionHandler)
+	http.HandleFunc("/v1/connection/get", s.getConnectionHandler)
 
 	// start server
 	s.Server.Addr = fmt.Sprintf(":%s", port)

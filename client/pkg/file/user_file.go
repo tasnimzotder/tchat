@@ -1,4 +1,4 @@
-package utils
+package file
 
 import "github.com/tasnimzotder/tchat/client/models"
 

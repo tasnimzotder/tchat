@@ -118,3 +118,4 @@ bin
 
 acme.json
 .env
+.vscode
