@@ -1,13 +1,16 @@
-version: "3"
+version: '3'
 
 services:
   api:
     container_name: api
-    build:
-      context: ./server
-    #      target: final
+    # build:
+    #   context: ./server
+    # #      target: final
+    image: sjc.vultrcr.com/xtasnim/tchat-api:latest
     expose:
       - 5050
+    ports:
+      - 5050:5050
     labels:
       - traefik.enable=true
     networks:

@@ -1,9 +1,10 @@
 import os
 
 from flask import Flask, request
+from waitress import serve
+import logging
 
 app = Flask(__name__)
-
 app.debug = False
 
 WORK_DIR = '/app'
@@ -17,36 +18,52 @@ def read_and_strip(command):
     return command.read().split('\n')[0].strip()
 
 
+@app.before_request
+def log_request():
+    app.logger.info("%s %s %s", request.method,
+                    request.path, request.remote_addr)
+
+
+@app.after_request
+def log_response(response):
+    if response.status_code != 200:
+        app.logger.info('%s', response.status)
+
+    return response
+
+
 @app.route('/webhook', methods=['POST'])
 def handle_webhook():
     """
     Handle the webhook request and trigger the deployment process if the webhook is valid. Returns a status message and HTTP status code.
     """
     if request.json and request.json.get('ref') == 'refs/heads/main':
-        os.system("cd {}".format(WORK_DIR))
+        file_name = "deploy.sh"
 
-        # clone the repository "tchat" if not exists
-        if not os.path.exists('/app/tchat'):
-            os.system("git clone {}".format(GIT_REPO))
+        file_path = "{}/{}".format(WORK_DIR, file_name)
+        print(file_path)
 
-        # pull the latest changes from the repository
-        os.system("cd {}/tchat".format(WORK_DIR))
-        os.system("git pull origin main")
+        # check if the file exists
+        if not os.path.exists(file_path):
+            res = {
+                "status": "ERROR",
+                "message": "File not found"
+            }
+            return res, 404
 
-        # create a file acme.json for traefik if not exists
-        if not os.path.exists('/app/tchat/acme.json'):
-            with open('/app/tchat/acme.json', 'w') as f:
-                f.write('{}')
-
-        # build and run the docker containers
-        os.system(
-            "docker compose -f {}/tchat/compose.yaml up -d --build".format(WORK_DIR))
+        # read the exit code
+        exit_code = os.system("bash {}".format(file_path))
+        if exit_code != 0:
+            res = {
+                "status": "ERROR",
+                "message": "Deployment failed"
+            }
+            return res, 500
 
         res = {
             "status": "OK",
             "message": "Deployment triggered"
         }
-
         return res, 200
 
     else:
@@ -104,5 +121,17 @@ def health():
     return res, 200
 
 
+@app.route('/', methods=['GET'])
+def index():
+    res = {
+        "status": "OK",
+        "message": "Webhook Listener"
+    }
+
+    return res, 200
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000)
+    app.logger.setLevel(logging.INFO)
+
+    serve(app, host='0.0.0.0', port=3000)

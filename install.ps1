@@ -1,65 +1,51 @@
-# Configuration
-$INSTALL_DIR = "$env:ProgramFiles\tchat"  # Standard installation location
-$CONFIG_DIR = "$HOME\.config\tchat"
-$CLIENT_DIR = "./client" # Directory containing the client source code
+# Configuration (Adjust as needed)
+$INSTALL_DIR = "C:\Program Files\tchat" 
+$CONFIG_DIR = "$env:USERPROFILE\.config\tchat"
+$CLIENT_DIR = "./client"  # Directory containing the client source code
+$RELEASE_URL = "https://github.com/tasnimzotder/tchat/releases/latest/download"
+$ASSET_WINDOWS_AMD64 = "tchat.windows.amd64.exe" 
 
-# Utils
-func Write-ColoredOutput {
-    param(
-        [Parameter(Mandatory)]
-        [ValidateSet('info', 'error')]
-        $Type
+# ------------------------
+#  Functions (like Bash 'print')
+# ------------------------
 
-        [Parameter(Mandatory)]
-        $Message
-    )
-
-    $Color = switch ($Type) {
-        'info' { 'Green' }
-        'error' { 'Red' }
-
-        Write-Host "tChat >> " -ForegroundColor $Color -NoNewline
-        Write-Host $Message
+function Write-ColoredOutput($Type, $Message) {
+    switch ($Type) {
+        "info"  { Write-Host "tChat >> " -ForegroundColor Cyan $Message }
+        "error" { Write-Host "tChat >> " -ForegroundColor Red $Message }
+        Default { Write-Host "tChat >> " -ForegroundColor Green $Message }
     }
 }
 
-# Error Handling
-function handle_error {
-    Write-ColoredOutput "error" "Installation failed. Please check the error messages above."
+# ------------------------
+#  "Error Handling"
+# ------------------------
+
+$ErrorActionPreference = "Stop"  # PowerShell's equivalent to 'set -e'
+
+# ------------------------
+#  Check OS 
+# ------------------------
+
+Write-ColoredOutput "info" "Checking OS..."
+
+if (-not ($env:OS -eq "Windows_NT")) {
+    Write-ColoredOutput "error" "This script is primarily intended for Windows systems."
     exit 1
 }
 
-
-# Check OS (PowerShell is Windows-based)
-Write-ColoredOutput "info" "OS check is implicit on PowerShell..."
-
-Write-ColoredOutput "info" "Checking for git..."
-if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Write-ColoredOutput "error" "git could not be found. Please install it ."
-    exit 1
-}
-
-Write-ColoredOutput "info" "Checking for go..."
-if (-not (Get-Command go -ErrorAction SilentlyContinue)) {
-    Write-ColoredOutput "error" "go could not be found. Please install it."
-    exit 1
-}
-
-# Main Installation Logic
-Write-ColoredOutput "info" "Building client..."
-Push-Location $CLIENT_DIR  # Equivalent to cd in PowerShell
-try {
-    go build -o $CLIENT_DIR\bin\tchat $CLIENT_DIR\main.go
-    Write-ColoredOutput "info" "Build successful!"
-} finally {
-    Pop-Location
-}
+# ------------------------
+#  Main Installation Logic
+# ------------------------
 
 Write-ColoredOutput "info" "Installing tchat..."
 
-Write-ColoredOutput "info" "Creating configuration directory: $CONFIG_DIR"
-New-Item -ItemType Directory -Force -Path $CONFIG_DIR | Out-Null
+# Create installation directory if needed
+if (-not (Test-Path $INSTALL_DIR)) {
+    New-Item -Path $INSTALL_DIR -ItemType Directory | Out-Null
+}
 
-Copy-Item -Path .\bin\tchat.exe -Destination $INSTALL_DIR 
+# Download the binary (assuming there's a Windows-compatible asset)
+Invoke-WebRequest -Uri ($RELEASE_URL + "/" + $ASSET_WINDOWS_AMD64) -OutFile "$INSTALL_DIR\tchat.exe" 
 
 Write-ColoredOutput "info" "Installation successful!"

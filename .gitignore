@@ -117,5 +117,11 @@ fabric.properties
 bin
 
 acme.json
-.env
+**/.env.*
+**/.env
 .vscode
+
+act.*
+zzz/
+.DS_Store
+.DS_Store

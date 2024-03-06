@@ -8,7 +8,6 @@ import (
 	"github.com/tasnimzotder/tchat/client/models"
 	"github.com/tasnimzotder/tchat/client/pkg/crypto"
 	"github.com/tasnimzotder/tchat/client/pkg/file"
-	"github.com/tasnimzotder/tchat/client/pkg/util"
 )
 
 func DisplayMessages(limit int) {
@@ -45,9 +44,9 @@ func DisplayMessages(limit int) {
 			messages[i].Payload = _plainTextMessage
 		}
 
-		if i == len(messages)-1 {
-			util.CopyToClipboard(messages[i].Payload)
-		}
+		// if i == len(messages)-1 {
+		// 	util.CopyToClipboard(messages[i].Payload)
+		// }
 
 		displayMessage(table, messages[i])
 	}
@@ -93,7 +92,7 @@ func displayMessage(table *tablewriter.Table, message models.Message) {
 
 	// trim message if it's too long
 	if len(message.Payload) > 15 {
-		message.Payload = message.Payload[:32] + "..."
+		message.Payload = message.Payload[:15] + "..."
 	}
 
 	// contact name, show only first 6 characters

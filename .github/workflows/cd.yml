@@ -1,10 +1,8 @@
-name: CI
+name: CD
 
 on:
   push:
-    branches: ['main', 'dev']
-  pull_request:
-    branches: ['main']
+    branches: [ 'main', 'dev' ]
 
 jobs:
   server_test:
@@ -37,19 +35,11 @@ jobs:
       - name: Build the Docker image
         run: |
           docker build . --file Dockerfile --tag tchat/api:latest
-  client_test:
-    defaults:
-      run:
-        working-directory: ./client
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.22
+      - name: Log into the Vultr Container Registry
+        run: docker login https://sjc.vultrcr.com/xtasnim  -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Run tests
-        run: make test
+      - name: Push the Docker image
+        run: |
+          docker tag tchat/api:latest sjc.vultrcr.com/xtasnim/tchat-api:latest
+          docker push sjc.vultrcr.com/xtasnim/tchat-api:latest

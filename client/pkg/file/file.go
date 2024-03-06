@@ -5,11 +5,17 @@ import (
 	"os"
 )
 
+// getConfigDir returns the configuration directory path.
+//
+// No parameters.
+// Returns a string.
 func getConfigDir() string {
 	homeDir, _ := os.UserHomeDir()
 	return homeDir + "/.config/tchat"
 }
 
+// GetFileContents reads the contents of a file and returns them as a byte slice.
+// It takes the file name as input and returns the file contents and any error encountered.
 func GetFileContents(fileName string) ([]byte, error) {
 	contents, err := os.ReadFile(fileName)
 	if err != nil {
