@@ -71,6 +71,12 @@ func AppendToMessagesFile(message models.Message) error {
 			return err
 		}
 
+		// write empty file
+		_, err = file.Write([]byte("[]"))
+		if err != nil {
+			return err
+		}
+
 		defer file.Close()
 	}
 

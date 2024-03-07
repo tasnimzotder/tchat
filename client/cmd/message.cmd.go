@@ -10,7 +10,6 @@ import (
 	"github.com/tasnimzotder/tchat/client/internal"
 	"github.com/tasnimzotder/tchat/client/pkg/file"
 	"github.com/tasnimzotder/tchat/client/pkg/message"
-	"github.com/tasnimzotder/tchat/client/pkg/util"
 )
 
 var messageCmd = &cobra.Command{
@@ -67,7 +66,7 @@ func MessageCmd(cmd *cobra.Command, args []string) {
 		_message := message.DisplaySingleMessageRaw(serialNumber)
 
 		// copy to clipboard
-		util.CopyToClipboard(_message.Payload)
+		// util.CopyToClipboard(_message.Payload)
 
 		if saveFlagSet {
 			fileName, _ := cmd.Flags().GetString("save")

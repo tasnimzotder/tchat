@@ -78,7 +78,7 @@ func displayMessage(table *tablewriter.Table, message models.Message) {
 
 	// trim message if it's too long
 	if len(message.Payload) > 15 {
-		message.Payload = message.Payload[:32] + "..."
+		message.Payload = message.Payload[:15] + "..."
 	}
 
 	// contact name, show only first 6 characters

@@ -45,6 +45,13 @@ func WriteToContactFile(contact models.Contact) error {
 			return err
 		}
 
+		// write empty file
+		_, err = file.Write([]byte("[]"))
+		if err != nil {
+			log.Printf("Failed to write to file: %v", err)
+			return err
+		}
+
 		defer file.Close()
 	}
 

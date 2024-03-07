@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"crypto/x509"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -17,7 +16,6 @@ import (
 	"github.com/tasnimzotder/tchat/client/models"
 	"github.com/tasnimzotder/tchat/client/pkg/crypto"
 	"github.com/tasnimzotder/tchat/client/pkg/file"
-	"github.com/tasnimzotder/tchat/client/pkg/util"
 )
 
 var connectionCmd = &cobra.Command{
@@ -164,20 +162,20 @@ func BeginConnection(cmd *cobra.Command) {
 	}
 
 	// copy the passkey to clipboard
-	clipboardData := struct {
-		PassKey string
-		ID      string
-	}{
-		PassKey: passKey,
-		ID:      config.ID,
-	}
+	// clipboardData := struct {
+	// 	PassKey string
+	// 	ID      string
+	// }{
+	// 	PassKey: passKey,
+	// 	ID:      config.ID,
+	// }
 
-	_data, err := json.Marshal(clipboardData)
-	if err != nil {
-		log.Fatalf("Failed to marshal clipboard data: %v", err)
-	}
+	// _data, err := json.Marshal(clipboardData)
+	// if err != nil {
+	// 	log.Fatalf("Failed to marshal clipboard data: %v", err)
+	// }
 
-	util.CopyToClipboard(string(_data))
+	// util.CopyToClipboard(string(_data))
 }
 
 func ListConnections(cmd *cobra.Command) {

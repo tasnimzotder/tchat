@@ -1,0 +1,57 @@
+---
+- name: Deploy Program Files to the DO Droplets
+  hosts: servers
+
+  pre_tasks:
+    - name: Create the app directory
+      ansible.builtin.file:
+        path: /app
+        state: directory
+        mode: '0755'
+
+  tasks:
+    - name: Copy the program files & scripts to the droplets
+      ansible.builtin.copy:
+        src: '{{ item }}'
+        dest: /app/
+        mode: '0644'
+      with_fileglob:
+        - ./../../webhook/webhook_listener.py
+        - ./../../webhook/requirements.txt
+        - ./../../scripts/Makefile
+        - ./../../scripts/deploy.sh
+        - ./../../.env.local
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install the required python packages
+      ansible.builtin.pip:
+        requirements: /app/requirements.txt
+        # virtualenv: /app/venv
+        executable: pip3
+        extra_args: --break-system-packages
+
+    - name: Copy service files to the droplets
+      ansible.builtin.copy:
+        src: '{{ item }}'
+        dest: /etc/systemd/system/
+        mode: '0644'
+      with_fileglob:
+        - ./../../scripts/webhook-listener.service
+
+    - name: Enable the service
+      ansible.builtin.systemd:
+        name: webhook-listener
+        enabled: true
+        state: started
+
+    - name: Reload the systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Start the service
+      ansible.builtin.systemd:
+        name: webhook-listener
+        state: started

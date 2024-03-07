@@ -9,3 +9,9 @@ webhook_start:
 
 webhook_stop:
 	systemctl stop webhook-listener.service
+
+webhook_status:
+	systemctl status webhook-listener.service
+
+webhook_listen:
+	journalctl -xefu webhook-listener.service

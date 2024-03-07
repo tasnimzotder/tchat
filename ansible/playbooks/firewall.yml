@@ -1,0 +1,72 @@
+---
+- name: Firewall Setup
+  hosts: servers
+  become: true
+
+  vars:
+    firewall_rules:
+      - proto: 'tcp'
+        port: '22'
+        src: '0.0.0.0/0'
+        rule: 'allow'
+        comment: 'SSH'
+
+      - proto: 'tcp'
+        port: '80'
+        src: '0.0.0.0/0'
+        rule: 'allow'
+        comment: 'HTTP'
+
+      - proto: 'tcp'
+        port: '443'
+        src: '0.0.0.0/0'
+        rule: 'allow'
+        comment: 'HTTPS'
+
+      - proto: 'tcp'
+        port: '8080'
+        src: '0.0.0.0/0'
+        rule: 'allow'
+        comment: 'HTTP'
+
+      - proto: 'tcp'
+        port: '3000'
+        src: '0.0.0.0/0'
+        rule: 'allow'
+        comment: 'temporary webhook port'
+
+      - proto: 'udp'
+        port: '53'
+        src: '0.0.0.0/0'
+        rule: 'allow'
+        comment: 'DNS'
+
+      - proto: 'tcp'
+        port: '5050'
+        src: '0.0.0.0/0'
+        rule: 'allow'
+        comment: 'temporary api port'
+
+      - proto: 'tcp'
+        port: '9001'
+        src: '0.0.0.0/0'
+        rule: 'allow'
+        comment: 'portainer'
+
+  pre_tasks:
+    - name: Install UFW
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+        update_cache: true
+
+  tasks:
+    - name: Configure Ingress Traffic
+      community.general.ufw:
+        state: enabled
+        rule: '{{ item.rule }}'
+        proto: '{{ item.proto }}'
+        port: '{{ item.port }}'
+        src: '{{ item.src }}'
+        comment: '{{ item.comment }}'
+      with_items: '{{ firewall_rules }}'

@@ -4,7 +4,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"log"
 	"os"
 
 	"github.com/tasnimzotder/tchat/client/pkg/crypto"
@@ -26,6 +25,12 @@ func StoreRSAKeys(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) error {
 	privateFileName := getConfigDir() + "/keys/private.pem"
 	publicFileName := getConfigDir() + "/keys/public.pem"
 
+	// create directories
+	err := os.MkdirAll(getConfigDir()+"/keys", 0755)
+	if err != nil {
+		return err
+	}
+
 	//	create the files
 	privateFile, err := os.Create(privateFileName)
 	if err != nil {
@@ -41,8 +46,11 @@ func StoreRSAKeys(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) error {
 
 	//	write to files
 	err = pem.Encode(privateFile, privatePEM)
-	err = pem.Encode(publicFile, publicPEM)
+	if err != nil {
+		return err
+	}
 
+	err = pem.Encode(publicFile, publicPEM)
 	if err != nil {
 		return err
 	}
@@ -53,7 +61,13 @@ func StoreRSAKeys(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) error {
 func StoreContactPublicKey(userID string, publicKey string) (string, error) {
 	destFileName := getConfigDir() + "/contact_keys/" + userID + ".pem"
 
-	log.Printf("Public key: %s", publicKey)
+	// create directories
+	err := os.MkdirAll(getConfigDir()+"/contact_keys", 0755)
+	if err != nil {
+		return "", err
+	}
+
+	// log.Printf("Public key: %s", publicKey)
 
 	var encryptioner crypto.Encryptioner = &crypto.RSAEncryption{}
 
@@ -62,7 +76,7 @@ func StoreContactPublicKey(userID string, publicKey string) (string, error) {
 		return "", err
 	}
 
-	log.Printf("Decoded public key: %s", decodedPublicKey)
+	// log.Printf("Decoded public key: %s", decodedPublicKey)
 
 	pemBlock := &pem.Block{
 		Type:  "RSA PUBLIC KEY",
@@ -80,7 +94,7 @@ func StoreContactPublicKey(userID string, publicKey string) (string, error) {
 		return "", err
 	}
 
-	log.Printf("Public key stored at: %s", destFileName)
+	// log.Printf("Public key stored at: %s", destFileName)
 
 	return destFileName, nil
 }

@@ -21,6 +21,10 @@ func InitializeNewConnection(name string) {
 
 	// convert to io.Reader
 	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		log.Printf("Failed to marshal body: %v", err)
+		return
+	}
 
 	u := url.URL{
 		Scheme: "http",
@@ -64,6 +68,7 @@ func InitializeNewConnection(name string) {
 
 	err = file.StoreRSAKeys(privateKey, publicKey)
 	if err != nil {
+		log.Printf("Failed to store RSA keys: %v", err)
 		return
 	}
 
