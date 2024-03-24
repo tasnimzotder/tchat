@@ -1,19 +1,46 @@
 package main
 
 import (
-	"github.com/joho/godotenv"
-	"github.com/tasnimzotder/tchat/client/cmd"
 	"log"
+	"os"
+
+	"github.com/joho/godotenv"
+	"github.com/tasnimzotder/tchat/_client/cmd"
+	"github.com/tasnimzotder/tchat/_client/internal/storage"
+	"github.com/tasnimzotder/tchat/_client/pkg/client"
 )
 
 func init() {
-	if err := godotenv.Load(".env.local"); err != nil {
-		//log.Printf("Failed to load env file: %v", err)
+	err := godotenv.Load()
+
+	if err != nil {
+		os.Setenv("TC_SERVER_HOST", "api.tchat.tasnim.dev")
 	}
 }
 
 func main() {
-	if err := cmd.Execute(); err != nil {
-		log.Fatalf("Failed to execute command: %v", err)
+	sqlite, err := storage.NewSQLiteStorage()
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
+	// migrate db
+	if err := sqlite.Migrate(); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
+	reqScheme := "http"
+
+	apiClient := client.NewClient(
+		os.Getenv("TC_SERVER_HOST"),
+		reqScheme,
+	)
+
+	// cmd.Execute(apiClient)
+	if err := cmd.Execute(apiClient); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
 	}
 }

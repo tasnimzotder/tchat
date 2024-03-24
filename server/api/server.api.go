@@ -2,10 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/tasnimzotder/tchat/server/middleware"
 	"github.com/tasnimzotder/tchat/server/models"
 )
 
@@ -24,23 +24,35 @@ func NewServerAPI() *ServerAPI {
 }
 
 func (s *ServerAPI) Start(port string) {
-	log.Println("Starting server")
+	router := http.NewServeMux()
 
 	// routes
-	http.HandleFunc("/health", s.healthCheckHandler)
-	http.HandleFunc("/ping", s.PingHandler)
-	http.HandleFunc("/v1/user/create", s.createUserHandler)
-	http.HandleFunc("/v1/message/send", s.sendMessageHandler)
-	http.HandleFunc("/v1/message/get", s.getMessageHandler)
+	router.HandleFunc("POST /v1/user/create", s.createUserHandler)
+	router.HandleFunc("POST /v1/message/send", s.sendMessageHandler)
+	router.HandleFunc("GET /v1/message/get", s.getMessageHandler)
 
 	// connection
-	http.HandleFunc("/v1/connection/set", s.setConnectionHandler)
-	http.HandleFunc("/v1/connection/get", s.getConnectionHandler)
+	router.HandleFunc("POST /v1/connection/set", s.setConnectionHandler)
+	router.HandleFunc("POST /v1/connection/get", s.getConnectionHandler)
 
-	// start server
-	s.Server.Addr = fmt.Sprintf(":%s", port)
-	err := s.Server.ListenAndServe()
-	if err != nil {
+	v1 := http.NewServeMux()
+	v1.Handle("/v1/", http.StripPrefix("/v1", router))
+
+	router.HandleFunc("GET /health", s.healthCheckHandler)
+	router.HandleFunc("GET /ping", s.PingHandler)
+
+	// middleware
+	stack := middleware.CreateStack(
+		middleware.Logging,
+	)
+
+	server := http.Server{
+		Addr:    ":" + port,
+		Handler: stack(router),
+	}
+
+	log.Printf("Server started on port %s", port)
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }
@@ -62,5 +74,12 @@ func (s *ServerAPI) healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(`{"status": "ok"}`))
+
+	health := struct {
+		Status string `json:"status"`
+	}{
+		Status: "ok",
+	}
+
+	_ = json.NewEncoder(w).Encode(health)
 }

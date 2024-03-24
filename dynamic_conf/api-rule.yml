@@ -5,9 +5,9 @@ http:
       service: api-service
       entryPoints:
         - web
-      #   - websecure
-      # tls:
-      #   certResolver: staging
+        - websecure
+      tls:
+        certResolver: production
       middlewares:
         - test-ratelimit
         - test-retry

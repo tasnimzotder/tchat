@@ -1,6 +1,7 @@
 package models
 
 type Message struct {
+	ID          uint   `json:"id" gorm:"primaryKey,autoIncrement"`
 	SenderID    string `json:"sender_id"`
 	RecipientID string `json:"recipient_id"`
 	MessageType string `json:"message_type"`
@@ -10,18 +11,6 @@ type Message struct {
 	FileName    string `json:"file_name"`
 	FileMode    string `json:"file_mode"`
 	FileExt     string `json:"file_ext"`
-}
-
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type Connection struct {
-	Name        string `json:"name"`
-	UserID      string `json:"user_id"`
-	PassKey     string `json:"pass_key"`
-	PublicKey   string `json:"public_key"`
-	Expiration  string `json:"expiration"`
-	Persistence string `json:"persistence"`
+	CreatedAt   int64  `json:"created_at" gorm:"autoCreateTime:milli"`
+	UpdatedAt   int64  `json:"updated_at" gorm:"autoUpdateTime:milli"`
 }

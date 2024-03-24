@@ -24,12 +24,6 @@
         comment: 'HTTPS'
 
       - proto: 'tcp'
-        port: '8080'
-        src: '0.0.0.0/0'
-        rule: 'allow'
-        comment: 'HTTP'
-
-      - proto: 'tcp'
         port: '3000'
         src: '0.0.0.0/0'
         rule: 'allow'
@@ -40,18 +34,6 @@
         src: '0.0.0.0/0'
         rule: 'allow'
         comment: 'DNS'
-
-      - proto: 'tcp'
-        port: '5050'
-        src: '0.0.0.0/0'
-        rule: 'allow'
-        comment: 'temporary api port'
-
-      - proto: 'tcp'
-        port: '9001'
-        src: '0.0.0.0/0'
-        rule: 'allow'
-        comment: 'portainer'
 
   pre_tasks:
     - name: Install UFW

@@ -1,7 +1,7 @@
-ansible-install:
+ansible-setup:
 	ansible-playbook playbooks/setup.yml -i inventory.yml -vv
 
-ansible-install-dry:
+ansible-setup-dry:
 	ansible-playbook playbooks/setup.yml -i inventory.yml -vvvv --check
 
 ansible-deploy-files:

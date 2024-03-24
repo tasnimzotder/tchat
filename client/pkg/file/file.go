@@ -1,38 +1,77 @@
 package file
 
 import (
+	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 )
 
-// getConfigDir returns the configuration directory path.
-//
-// No parameters.
-// Returns a string.
-func getConfigDir() string {
-	homeDir, _ := os.UserHomeDir()
+type Config struct {
+	DatabasePath string
+	Name         string
+	ID           string
+}
+
+func GetProjectStoragePath() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+
 	return homeDir + "/.config/tchat"
 }
 
-// GetFileContents reads the contents of a file and returns them as a byte slice.
-// It takes the file name as input and returns the file contents and any error encountered.
-func GetFileContents(fileName string) ([]byte, error) {
-	contents, err := os.ReadFile(fileName)
+func ReadFile(filePath string) ([]byte, error) {
+	file, err := os.Open(filePath)
 	if err != nil {
-		log.Printf("Failed to read file: %v", err)
+		return nil, err
+	}
+	defer file.Close()
+
+	data, err := os.ReadFile(filePath)
+	if err != nil {
 		return nil, err
 	}
 
-	return contents, nil
+	return data, nil
 }
 
-func SaveFile(filePath string, data []byte) error {
-	err := os.WriteFile(filePath, data, 0644)
-
+func GetRootFilesInDir(dirPath string) ([]string, error) {
+	fileInfos, err := os.ReadDir(dirPath)
 	if err != nil {
-		log.Printf("Failed to save file: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	var files []string
+	for _, fileInfo := range fileInfos {
+		if fileInfo.IsDir() {
+			continue
+		}
+
+		files = append(files, fileInfo.Name())
+	}
+
+	return files, nil
+}
+
+func FileInfo(filePath string) fs.FileInfo {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		log.Printf("Failed to get file size: %v", err)
+		return nil
+	}
+
+	return fileInfo
+}
+
+func Extension(filePath string) string {
+	fileExt := filepath.Ext(filePath)
+
+	// remove the initial dot if present
+	if len(fileExt) > 0 && fileExt[0] == '.' {
+		fileExt = fileExt[1:]
+	}
+
+	return fileExt
 }

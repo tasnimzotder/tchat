@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/tasnimzotder/tchat/server/models"
 	"github.com/tasnimzotder/tchat/server/utils"
@@ -36,7 +35,7 @@ func (s *ServerAPI) sendMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	message.Timestamp = time.Now().Format(time.RFC3339)
+	// message.Timestamp = time.Now().Format(time.RFC3339)
 
 	// store message in the message stack
 	s.MessageStacks[message.RecipientID] = append(s.MessageStacks[message.RecipientID], message)
