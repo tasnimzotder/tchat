@@ -36,22 +36,22 @@ providers:
 #    addServicesLabels: true
 #    pushInterval: 1s
 
-# certificatesResolvers:
-#   staging:
-#     acme:
-#       email: hello@tasnim.dev
-#       storage: acme.json
-#       caServer: https://acme-staging-v02.api.letsencrypt.org/directory
-#       httpChallenge:
-#         entryPoint: web
-#       tlsChallenge: { }
+  certificatesResolvers:
+    staging:
+      acme:
+        email: hello@tasnim.dev
+        storage: acme.json
+        caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+        httpChallenge:
+          entryPoint: web
+        tlsChallenge: { }
 
-#   production:
-#     acme:
-#       email: hello@tasnim.dev
-#       storage: acme.json
-#       caServer: https://acme-v02.api.letsencrypt.org/directory
-#       httpChallenge:
-#         entryPoint: web
-#       tlsChallenge: { }
+    production:
+      acme:
+        email: hello@tasnim.dev
+        storage: acme.json
+        caServer: https://acme-v02.api.letsencrypt.org/directory
+        httpChallenge:
+          entryPoint: web
+        tlsChallenge: { }
 

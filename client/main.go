@@ -11,7 +11,11 @@ import (
 )
 
 func init() {
-	_ = godotenv.Load()
+	err := godotenv.Load()
+
+	if err != nil {
+		os.Setenv("TC_SERVER_HOST", "api.tchat.tasnim.dev")
+	}
 }
 
 func main() {

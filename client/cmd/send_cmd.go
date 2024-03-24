@@ -28,7 +28,7 @@ func sendMessageCmd(apiClient *client.Client) *cobra.Command {
 	return sendMessageCmd
 }
 
-func sendMessageHandler(apiClient *client.Client, cmd *cobra.Command, args []string) error {
+func sendMessageHandler(apiClient *client.Client, _ *cobra.Command, args []string) error {
 	var err error
 	var recipientName, messageType, messageText string
 	var currDir, fileName string

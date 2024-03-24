@@ -5,8 +5,6 @@ import (
 	"github.com/tasnimzotder/tchat/_client/pkg/client"
 )
 
-
-
 func Execute(apiClient *client.Client) error {
 	var rootCmd = &cobra.Command{
 		Use:   "tchat",

@@ -22,20 +22,10 @@ Terminal chat application for developers. Share texts and files between users (o
 
 ## Installation
 
-Git clone the repository and run the following commands:
-
 1. For Mac and Linux:
 
 ```bash
-sudo sh install.sh
-```
-
-This will build the application and copy the executable to /usr/local/bin directory.
-
-2. For Windows: (using PowerShell)
-
-```bash
-.\install.ps1
+curl https://raw.githubusercontent.com/tasnimzotder/tchat/main/install.sh | sudo sh
 ```
 
 ## Usage
@@ -55,7 +45,7 @@ tchat conn
 ## Commands
 
 | Command | Description              | Example                                 |
-| ------- | ------------------------ | --------------------------------------- |
+|---------|--------------------------|-----------------------------------------|
 | `conn`  | Start or save connection | `tchat conn`                            |
 | `msg`   | Receive messages         | `tchat msg -d 1 -s hello.txt`           |
 | `send`  | Send messages            | `tchat send -r <receiver> -m <message>` |
@@ -63,7 +53,7 @@ tchat conn
 ### Message Command
 
 | Option | Description                      | Example                       |
-| ------ | -------------------------------- | ----------------------------- |
+|--------|----------------------------------|-------------------------------|
 | -c     | Clear the messages               | `tchat msg -c all`            |
 | -d     | Display a message (serialNumber) | `tchat m -d 2`                |
 | -s     | Save a message to file           | `tchat msg -d 2 -s hello.txt` |
@@ -71,7 +61,7 @@ tchat conn
 ### Send Command
 
 | Option | Description | Example                                 |
-| ------ | ----------- | --------------------------------------- |
+|--------|-------------|-----------------------------------------|
 | -r     | Receiver    | `tchat send -r <receiver> -m <message>` |
 | -m     | Message     | `tchat send -r <receiver> -m <message>` |
 | -f     | File        | `tchat send -r <receiver> -f <file>`    |

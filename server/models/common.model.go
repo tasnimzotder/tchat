@@ -6,6 +6,10 @@ type Message struct {
 	MessageType string `json:"message_type"`
 	Payload     string `json:"payload"`
 	Timestamp   string `json:"timestamp"`
+	FileSize    int64  `json:"file_size"`
+	FileName    string `json:"file_name"`
+	FileMode    string `json:"file_mode"`
+	FileExt     string `json:"file_ext"`
 }
 
 type User struct {

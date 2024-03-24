@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from waitress import serve
 import logging
 
@@ -11,21 +11,27 @@ WORK_DIR = '/app'
 GIT_REPO = 'https://github.com/tasnimzotder/tchat.git'
 
 
-def read_and_strip(command):
+def strip_str(string: str) -> str:
+    return string.split('\n')[0].strip()
+
+
+def read_and_strip(command) -> str:
     """
     Function to read and strip the input command and return the first line after splitting by newline and stripping any leading/trailing whitespaces.
     """
-    return command.read().split('\n')[0].strip()
+    command_str = command.read()
+
+    return strip_str(command_str)
 
 
 @app.before_request
-def log_request():
+def log_request() -> None:
     app.logger.info("%s %s %s", request.method,
                     request.path, request.remote_addr)
 
 
 @app.after_request
-def log_response(response):
+def log_response(response) -> None:
     if response.status_code != 200:
         app.logger.info('%s', response.status)
 
@@ -33,7 +39,7 @@ def log_response(response):
 
 
 @app.route('/webhook', methods=['POST'])
-def handle_webhook():
+def handle_webhook() -> None:
     """
     Handle the webhook request and trigger the deployment process if the webhook is valid. Returns a status message and HTTP status code.
     """
@@ -49,7 +55,7 @@ def handle_webhook():
                 "status": "ERROR",
                 "message": "File not found"
             }
-            return res, 404
+            return jsonify(res), 404
 
         # read the exit code
         exit_code = os.system("bash {}".format(file_path))
@@ -72,11 +78,11 @@ def handle_webhook():
             "message": "Invalid webhook"
         }
 
-        return res, 400
+        return jsonify(res), 400
 
 
 @app.route('/health', methods=['GET'])
-def health():
+def health() -> None:
     """
     This function retrieves health information about the system and containers and returns the information along with a status code.
     """
@@ -118,20 +124,23 @@ def health():
         "container_info": container_info,
     }
 
-    return res, 200
+    return jsonify(res), 200
 
 
 @app.route('/', methods=['GET'])
-def index():
+def index() -> None:
     res = {
         "status": "OK",
         "message": "Webhook Listener"
     }
 
-    return res, 200
+    return jsonify(res), 200
+
+
+def main() -> None:
+    app.logger.setLevel(logging.INFO)
+    serve(app, host='0.0.0.0', port=3000)
 
 
 if __name__ == '__main__':
-    app.logger.setLevel(logging.INFO)
-
-    serve(app, host='0.0.0.0', port=3000)
+    main()
