@@ -45,7 +45,7 @@ func TestPingHandler(t *testing.T) {
 
 	// Check the response body
 	expected := `{"message":"pong"}`
-	assert.Equal(t, expected, strings.TrimSuffix(rr.Body.String(), "\n")) // Remove the newline character at the end of the actual response body string
+	assert.Equal(t, expected, strings.TrimSuffix(rr.Body.String(), "\n")) // 
 }
 
 func TestHealthCheckHandler(t *testing.T) {
@@ -66,6 +66,6 @@ func TestHealthCheckHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code)
 
 	// Check the response body
-	expected := `{"status": "ok"}`
-	assert.Equal(t, expected, strings.TrimSuffix(rr.Body.String(), "\n")) // Remove the newline character at the end of the actual response body string
+	expected := `{"status":"ok"}`
+	assert.Equal(t, expected, strings.TrimSuffix(rr.Body.String(), "\n"))
 }
