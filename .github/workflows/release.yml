@@ -9,7 +9,6 @@ jobs:
     defaults:
       run:
         working-directory: ./client
-    # needs: client_test
     runs-on: macos-14
     steps:
       - name: Checkout repository
@@ -28,4 +27,10 @@ jobs:
           CGO_ENABLED: 1
           GOOS: darwin
           GOARCH: arm64
-        run: go build -o client
+        run: go build -o /tmp/dist/client
+      
+      - name: Upload to artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: client
+          path: /tmp/dist/client
