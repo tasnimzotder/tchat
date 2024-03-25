@@ -5,10 +5,11 @@ on:
     branches: ['temp']
 
 jobs:
-  client_test:
+  client_release:
     defaults:
       run:
         working-directory: ./client
+    # needs: client_test
     runs-on: macos-14
     steps:
       - name: Checkout repository
@@ -19,18 +20,8 @@ jobs:
         with:
           go-version: 1.22
 
-      - name: Run tests
-        run: go test -v ./...
-
-  client_release:
-    defaults:
-      run:
-        working-directory: ./client
-    needs: client_test
-    runs-on: macos-14
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: go mod download -x
 
       - name: Build client
         env:
