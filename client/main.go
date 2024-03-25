@@ -4,42 +4,36 @@ import (
 	"log"
 	"os"
 
-	"github.com/joho/godotenv"
-	"github.com/tasnimzotder/tchat/_client/cmd"
 	"github.com/tasnimzotder/tchat/_client/internal/storage"
+
+	"github.com/tasnimzotder/tchat/_client/cmd"
 	"github.com/tasnimzotder/tchat/_client/pkg/client"
 )
 
-func init() {
-	err := godotenv.Load()
-
-	if err != nil {
-		os.Setenv("TC_SERVER_HOST", "api.tchat.tasnim.dev")
-	}
-}
-
 func main() {
-	sqlite, err := storage.NewSQLiteStorage()
+	reqScheme := "http"
+	host := "api.tchat.tasnim.dev"
+	version := "v0.0.3-beta"
+
+	apiClient := client.NewClient(
+		host,
+		reqScheme,
+	)
+
+	storageClient, err := storage.NewStorage(apiClient)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
 	// migrate db
-	if err := sqlite.Migrate(); err != nil {
+	if err := storageClient.Migrate(); err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
-	reqScheme := "http"
-
-	apiClient := client.NewClient(
-		os.Getenv("TC_SERVER_HOST"),
-		reqScheme,
-	)
-
 	// cmd.Execute(apiClient)
-	if err := cmd.Execute(apiClient); err != nil {
+	if err := cmd.Execute(storageClient, version); err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
