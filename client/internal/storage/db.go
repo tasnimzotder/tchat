@@ -1,34 +1,41 @@
 package storage
 
 import (
+	"github.com/tasnimzotder/tchat/_client/pkg/client"
 	"github.com/tasnimzotder/tchat/_client/pkg/file"
 	"github.com/tasnimzotder/tchat/_client/pkg/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"os"
 )
 
-type SQLiteStorage struct {
-	db *gorm.DB
+type Storage struct {
+	db  *gorm.DB
+	API *client.Client
 }
 
-func NewSQLiteStorage() (*SQLiteStorage, error) {
-	// if dbPath == "" || dbPath[len(dbPath)-7:] != ".sqlite" {
-	// 	return nil, errors.New("invalid database file")
-	// }
-
+func NewStorage(client *client.Client) (*Storage, error) {
 	dbPath := file.GetProjectStoragePath() + "/tchat.db"
+
+	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		_, err := os.Create(dbPath)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
 
-	return &SQLiteStorage{
-		db: db,
+	return &Storage{
+		db:  db,
+		API: client,
 	}, nil
 }
 
-func (s *SQLiteStorage) Close() error {
+func (s *Storage) Close() error {
 	db, err := s.db.DB()
 	if err != nil {
 		return err
@@ -37,7 +44,7 @@ func (s *SQLiteStorage) Close() error {
 	return db.Close()
 }
 
-func (s *SQLiteStorage) Migrate() error {
+func (s *Storage) Migrate() error {
 	err := s.db.AutoMigrate(
 		&models.User{},
 		&models.RSAKeys{},
@@ -50,4 +57,3 @@ func (s *SQLiteStorage) Migrate() error {
 
 	return nil
 }
-

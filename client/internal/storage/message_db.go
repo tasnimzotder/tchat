@@ -2,7 +2,7 @@ package storage
 
 import "github.com/tasnimzotder/tchat/_client/pkg/models"
 
-func (s *SQLiteStorage) SaveMessage(message models.Message) error {
+func (s *Storage) SaveMessage(message models.Message) error {
 	result := s.db.Create(message)
 	if result.Error != nil {
 		return result.Error
@@ -11,7 +11,7 @@ func (s *SQLiteStorage) SaveMessage(message models.Message) error {
 	return nil
 }
 
-func (s *SQLiteStorage) SaveMessages(messages []models.Message) error {
+func (s *Storage) SaveMessages(messages []models.Message) error {
 	if len(messages) == 0 {
 		return nil
 	}
@@ -24,7 +24,7 @@ func (s *SQLiteStorage) SaveMessages(messages []models.Message) error {
 	return nil
 }
 
-func (s *SQLiteStorage) GetMessages() ([]models.Message, error) {
+func (s *Storage) GetMessages() ([]models.Message, error) {
 	var messages []models.Message
 	result := s.db.Find(&messages)
 	if result.Error != nil {
@@ -34,7 +34,7 @@ func (s *SQLiteStorage) GetMessages() ([]models.Message, error) {
 	return messages, nil
 }
 
-func (s *SQLiteStorage) DeleteMessages() error {
+func (s *Storage) DeleteMessages() error {
 	result := s.db.Where("1 = 1").Delete(&models.Message{})
 	if result.Error != nil {
 		return result.Error

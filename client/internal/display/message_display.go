@@ -11,16 +11,16 @@ import (
 	"github.com/tasnimzotder/tchat/_client/pkg/utils"
 )
 
-func DisplayMessages(messages []models.Message) {
-	sqlite, err := storage.NewSQLiteStorage()
-	if err != nil {
-		fmt.Println("Error: ", err)
-		return
-	}
+func DisplayMessages(storageClient *storage.Storage, messages []models.Message) {
+	//sqlite, err := storage.NewSQLiteStorage()
+	//if err != nil {
+	//	fmt.Println("Error: ", err)
+	//	return
+	//}
+	//
+	//defer sqlite.Close()
 
-	defer sqlite.Close()
-
-	privateKey, err := sqlite.GetPrivateRSAKey()
+	privateKey, err := storageClient.GetPrivateRSAKey()
 	if err != nil {
 		fmt.Println("Error: ", err)
 		return
@@ -32,7 +32,7 @@ func DisplayMessages(messages []models.Message) {
 		_decodedMsg := decodeMessage(msg, privateKey)
 
 		// update sender name (from id)
-		contact, err := sqlite.GetContactByID(_decodedMsg.SenderID)
+		contact, err := storageClient.GetContactByID(_decodedMsg.SenderID)
 		if err == nil {
 			_decodedMsg.SenderID = contact.Name
 		}
@@ -116,16 +116,16 @@ func appendMessage(table *tablewriter.Table, message models.Message) {
 	})
 }
 
-func DisplaySingleMessage(message models.Message) {
-	sqlite, err := storage.NewSQLiteStorage()
-	if err != nil {
-		fmt.Println("Error: ", err)
-		return
-	}
+func DisplaySingleMessage(storageClient *storage.Storage, message models.Message) {
+	//sqlite, err := storage.NewSQLiteStorage()
+	//if err != nil {
+	//	fmt.Println("Error: ", err)
+	//	return
+	//}
+	//
+	//defer sqlite.Close()
 
-	defer sqlite.Close()
-
-	privateKey, err := sqlite.GetPrivateRSAKey()
+	privateKey, err := storageClient.GetPrivateRSAKey()
 	if err != nil {
 		fmt.Println("Error: ", err)
 		return
