@@ -34,12 +34,21 @@ jobs:
       - name: test
         run: go test -v ./...
 
+      - name: Set GOOS for macOS
+        if: matrix.os == 'macos-14'
+        run: echo "GOOS=darwin" >> $GITHUB_ENV
+      
+      - name: Set GOOS for Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: echo "GOOS=linux" >> $GITHUB_ENV
+
       - name: Build client
         env:
           CGO_ENABLED: 1
           # GOOS: ${{ matrix.os }}
-          # get os name from system - bash command
-          GOOS: $(uname | tr '[:upper:]' '[:lower:]')
+          # # get os name from system - bash command
+          # GOOS: $(uname | tr '[:upper:]' '[:lower:]')
+          GOOS: ${{ env.GOOS }}
           GOARCH: ${{ matrix.arch }}
         run: go build -o client
 
