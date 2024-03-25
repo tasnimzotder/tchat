@@ -1,26 +1,19 @@
 package main
 
 import (
-	"github.com/tasnimzotder/tchat/_client/internal/storage"
 	"log"
 	"os"
+
+	"github.com/tasnimzotder/tchat/_client/internal/storage"
 
 	"github.com/tasnimzotder/tchat/_client/cmd"
 	"github.com/tasnimzotder/tchat/_client/pkg/client"
 )
 
-func init() {
-	//err := godotenv.Load()
-	//
-	//if err != nil {
-	//	os.Setenv("TC_SERVER_HOST", "api.tchat.tasnim.dev")
-	//}
-}
-
 func main() {
 	reqScheme := "http"
 	host := "api.tchat.tasnim.dev"
-	version := "v0.0.2"
+	version := "v0.0.3-beta"
 
 	apiClient := client.NewClient(
 		host,
