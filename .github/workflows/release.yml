@@ -2,7 +2,7 @@ name: Client Release
 
 on:
   push:
-    branches: [ 'main' ]
+    branches: ['main', 'dev']
     tags:
       - 'v*'
 
@@ -11,8 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-14, ubuntu-latest]  
-        arch: [amd64, arm64] 
+        os: [macos-14, ubuntu-latest]
+        arch: [amd64, arm64]
         exclude:
           - os: macos-14
             arch: amd64
@@ -21,7 +21,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./client 
+        working-directory: ./client
 
     steps:
       - name: Checkout repository
@@ -41,7 +41,7 @@ jobs:
       - name: Set GOOS for macOS
         if: matrix.os == 'macos-14'
         run: echo "GOOS=darwin" >> $GITHUB_ENV
-      
+
       - name: Set GOOS for Ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: echo "GOOS=linux" >> $GITHUB_ENV
@@ -51,13 +51,13 @@ jobs:
           CGO_ENABLED: 1
           GOOS: ${{ env.GOOS }}
           GOARCH: ${{ matrix.arch }}
-        run: go build -o client
+        run: go build -o /tmp/tchat-${{ env.GOOS }}-${{ matrix.arch }} -v
 
       - name: Upload client artifact
         uses: actions/upload-artifact@v3
         with:
-          name: tchat-${{ env.GOOS }}-${{ matrix.arch }} 
-          path: ./client 
+          name: tchat-${{ env.GOOS }}-${{ matrix.arch }}
+          path: /tmp/tchat-*-*
 
   # release:
   #   # if: startsWith(github.ref, 'refs/tags/v')
@@ -72,7 +72,7 @@ jobs:
   #       uses: actions/download-artifact@v3
   #       with:
   #         path: .
-        
+
   #     - name: Create Release
   #       id: create_release
   #       uses: actions/create-release@v1
@@ -87,7 +87,7 @@ jobs:
   #           - Second Change
   #         draft: true
   #         prerelease: false
-    
+
   #     - name: Upload release assets
   #       uses: actions/upload-release-asset@v1
   #       env:
