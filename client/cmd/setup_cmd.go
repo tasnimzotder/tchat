@@ -7,21 +7,20 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tasnimzotder/tchat/_client/internal/display"
 	"github.com/tasnimzotder/tchat/_client/internal/storage"
-	"github.com/tasnimzotder/tchat/_client/pkg/client"
 	"github.com/tasnimzotder/tchat/_client/pkg/cryptography"
 )
 
-func setupCmd(apiClient *client.Client) *cobra.Command {
+func setupCmd(storageClient *storage.Storage) *cobra.Command {
 	return &cobra.Command{
 		Use:   "setup",
 		Short: "setup",
 		Run: func(cmd *cobra.Command, args []string) {
-			setupCmdHandler(apiClient, cmd, args)
+			setupCmdHandler(storageClient, cmd, args)
 		},
 	}
 }
 
-func setupCmdHandler(apiClient *client.Client, cmd *cobra.Command, args []string) {
+func setupCmdHandler(storageClient *storage.Storage, cmd *cobra.Command, args []string) {
 	display.PrintMessage("info", "Setting up tchat")
 	fmt.Printf("\n")
 
@@ -60,11 +59,11 @@ func setupCmdHandler(apiClient *client.Client, cmd *cobra.Command, args []string
 		return
 	}
 
-	createNewUser(apiClient, name, password)
+	createNewUser(storageClient, name, password)
 }
 
-func createNewUser(apiClient *client.Client, name, password string) {
-	user, err := apiClient.CreateUser(name, password)
+func createNewUser(storageClient *storage.Storage, name, password string) {
+	user, err := storageClient.API.CreateUser(name, password)
 	if err != nil {
 		display.PrintMessage("error", "Failed to create user")
 		return
@@ -76,13 +75,13 @@ func createNewUser(apiClient *client.Client, name, password string) {
 	// }
 
 	// save user details to the db
-	sqlite, err := storage.NewSQLiteStorage()
-	if err != nil {
-		display.PrintMessage("error", "Failed to create database")
-		return
-	}
-
-	defer sqlite.Close()
+	//sqlite, err := storage.NewSQLiteStorage()
+	//if err != nil {
+	//	display.PrintMessage("error", "Failed to create database")
+	//	return
+	//}
+	//
+	//defer sqlite.Close()
 
 	// crypto
 	privateKey, publicKey, err := cryptography.GenerateKeyPair(2048)
@@ -95,28 +94,28 @@ func createNewUser(apiClient *client.Client, name, password string) {
 	privateKeyBytes, publicKeyBytes := cryptography.ConvertRSAToBytes(privateKey, publicKey)
 
 	// delete all previous keys
-	if err = sqlite.DeleteRSAKeys(); err != nil {
+	if err = storageClient.DeleteRSAKeys(); err != nil {
 		display.PrintMessage("error", "Failed to delete RSA keys")
 		return
 	}
 
 	// save keys to db as []byte
-	if err = sqlite.SaveRSAKeys(privateKeyBytes, publicKeyBytes); err != nil {
+	if err = storageClient.SaveRSAKeys(privateKeyBytes, publicKeyBytes); err != nil {
 		display.PrintMessage("error", "Failed to save RSA keys")
 		return
 	}
 
 	// create all previous users in the db
-	users, _ := sqlite.GetAllUsers()
+	users, _ := storageClient.GetAllUsers()
 	for _, u := range users {
 		// delete all users
-		if err := sqlite.DeleteUser(u); err != nil {
+		if err := storageClient.DeleteUser(u); err != nil {
 			display.PrintMessage("error", "Failed to delete user")
 			return
 		}
 	}
 
-	err = sqlite.SaveUser(user)
+	err = storageClient.SaveUser(user)
 	if err != nil {
 		display.PrintMessage("error", "Failed to save user")
 		return

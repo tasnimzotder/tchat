@@ -16,17 +16,17 @@ import (
 	"github.com/tasnimzotder/tchat/_client/pkg/models"
 )
 
-func connectionCmd(apiClient *client.Client) *cobra.Command {
+func connectionCmd(storageClient *storage.Storage) *cobra.Command {
 	return &cobra.Command{
 		Use:   "conn",
 		Short: "conn",
 		Run: func(cmd *cobra.Command, args []string) {
-			connectionCmdHandler(apiClient, cmd, args)
+			connectionCmdHandler(storageClient, cmd, args)
 		},
 	}
 }
 
-func connectionCmdHandler(apiClient *client.Client, cmd *cobra.Command, args []string) {
+func connectionCmdHandler(storageClient *storage.Storage, cmd *cobra.Command, args []string) {
 	connectionTypes := []string{"begin", "create", "list", "remove"}
 
 	commandPrompt := promptui.Select{
@@ -41,29 +41,29 @@ func connectionCmdHandler(apiClient *client.Client, cmd *cobra.Command, args []s
 
 	switch connectionType {
 	case "begin":
-		beginConnectionHandler(apiClient)
+		beginConnectionHandler(storageClient)
 	case "create":
-		createConnectionHandler(apiClient)
+		createConnectionHandler(storageClient)
 	case "list":
-		listConnectionHandler()
+		listConnectionHandler(storageClient)
 	case "remove":
 		// todo: implement
 	}
 }
 
-func beginConnectionHandler(apiClient *client.Client) {
+func beginConnectionHandler(storageClient *storage.Storage) {
 	display.PrintMessage("info", "Beginning connection")
 	display.PrintMessage("info", "This setting will store your public RSA key on the server for other users to download \nand use to send you encrypted messages.\n")
 
-	sqlite, err := storage.NewSQLiteStorage()
-	if err != nil {
-		display.PrintMessage("error", "Failed to create storage")
-		return
-	}
+	//sqlite, err := storage.NewSQLiteStorage()
+	//if err != nil {
+	//	display.PrintMessage("error", "Failed to create storage")
+	//	return
+	//}
+	//
+	//defer sqlite.Close()
 
-	defer sqlite.Close()
-
-	publicKey, err := sqlite.GetPublicRSAKey()
+	publicKey, err := storageClient.GetPublicRSAKey()
 	if err != nil {
 		display.PrintMessage("error", "Failed to get public RSA key")
 		return
@@ -72,7 +72,7 @@ func beginConnectionHandler(apiClient *client.Client) {
 	publicKeyBase64 := cryptography.EncodeBase64(publicKey)
 
 	// user
-	user, err := sqlite.GetLastUser()
+	user, err := storageClient.GetLastUser()
 	if err != nil {
 		display.PrintMessage("error", "Failed to get user")
 		return
@@ -92,7 +92,7 @@ func beginConnectionHandler(apiClient *client.Client) {
 	}
 
 	// start connection
-	err = apiClient.CreateConnection(connectionRequest)
+	err = storageClient.API.CreateConnection(connectionRequest)
 	if err != nil {
 		display.PrintMessage("error", "Failed to create connection")
 		return
@@ -118,7 +118,7 @@ func beginConnectionHandler(apiClient *client.Client) {
 	table.Render()
 }
 
-func createConnectionHandler(apiClient *client.Client) {
+func createConnectionHandler(storageClient *storage.Storage) {
 	userIdPrompt := promptui.Prompt{
 		Label: "Enter the user ID",
 		Validate: func(input string) error {
@@ -157,7 +157,7 @@ func createConnectionHandler(apiClient *client.Client) {
 	}
 
 	// get connection
-	connection, err := apiClient.GetConnection(request)
+	connection, err := storageClient.API.GetConnection(request)
 	if err != nil {
 		display.PrintMessage("error", "Failed to get connection")
 		return
@@ -191,15 +191,15 @@ func createConnectionHandler(apiClient *client.Client) {
 	}
 
 	// add contact
-	sqlite, err := storage.NewSQLiteStorage()
-	if err != nil {
-		display.PrintMessage("error", "Failed to create storage")
-		return
-	}
+	//sqlite, err := storage.NewSQLiteStorage()
+	//if err != nil {
+	//	display.PrintMessage("error", "Failed to create storage")
+	//	return
+	//}
+	//
+	//defer sqlite.Close()
 
-	defer sqlite.Close()
-
-	err = sqlite.SaveContact(contact)
+	err = storageClient.SaveContact(contact)
 	if err != nil {
 		display.PrintMessage("error", "Failed to save contact")
 		return
@@ -208,16 +208,16 @@ func createConnectionHandler(apiClient *client.Client) {
 	display.PrintMessage("info", "Contact added successfully")
 }
 
-func listConnectionHandler() {
-	sqlite, err := storage.NewSQLiteStorage()
-	if err != nil {
-		display.PrintMessage("error", "Failed to create storage")
-		return
-	}
+func listConnectionHandler(storageClient *storage.Storage) {
+	//sqlite, err := storage.NewSQLiteStorage()
+	//if err != nil {
+	//	display.PrintMessage("error", "Failed to create storage")
+	//	return
+	//}
+	//
+	//defer sqlite.Close()
 
-	defer sqlite.Close()
-
-	contacts, err := sqlite.GetContacts()
+	contacts, err := storageClient.GetContacts()
 	if err != nil {
 		display.PrintMessage("error", "Failed to get contacts")
 		return

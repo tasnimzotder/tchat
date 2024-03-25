@@ -9,32 +9,31 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tasnimzotder/tchat/_client/internal/display"
 	"github.com/tasnimzotder/tchat/_client/internal/storage"
-	"github.com/tasnimzotder/tchat/_client/pkg/client"
 	"github.com/tasnimzotder/tchat/_client/pkg/cryptography"
 	"github.com/tasnimzotder/tchat/_client/pkg/file"
 	"github.com/tasnimzotder/tchat/_client/pkg/models"
 	"github.com/tasnimzotder/tchat/_client/pkg/utils"
 )
 
-func sendMessageCmd(apiClient *client.Client) *cobra.Command {
+func sendMessageCmd(storageClient *storage.Storage) *cobra.Command {
 	sendMessageCmd := &cobra.Command{
 		Use:   "send",
 		Short: "Send message",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return sendMessageHandler(apiClient, cmd, args)
+			return sendMessageHandler(storageClient, cmd, args)
 		},
 	}
 
 	return sendMessageCmd
 }
 
-func sendMessageHandler(apiClient *client.Client, _ *cobra.Command, args []string) error {
+func sendMessageHandler(storageClient *storage.Storage, _ *cobra.Command, args []string) error {
 	var err error
 	var recipientName, messageType, messageText string
 	var currDir, fileName string
 
 	if len(args) == 0 {
-		recipientName, err = promptForRecipientName()
+		recipientName, err = promptForRecipientName(storageClient)
 		if err != nil {
 			return err
 		}
@@ -71,20 +70,20 @@ func sendMessageHandler(apiClient *client.Client, _ *cobra.Command, args []strin
 	}
 
 	// contact details
-	sqlite, err := storage.NewSQLiteStorage()
-	if err != nil {
-		return err
-	}
+	//sqlite, err := storage.NewSQLiteStorage()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//defer sqlite.Close()
 
-	defer sqlite.Close()
-
-	contact, err := sqlite.GetContactByName(recipientName)
+	contact, err := storageClient.GetContactByName(recipientName)
 	if err != nil {
 		return err
 	}
 
 	// get sender id
-	senderID, err := sqlite.GetUserID()
+	senderID, err := storageClient.GetUserID()
 	if err != nil {
 		return err
 	}
@@ -177,7 +176,7 @@ func sendMessageHandler(apiClient *client.Client, _ *cobra.Command, args []strin
 	fmt.Printf("\n")
 
 	// send message
-	err = apiClient.SendMessage(msgReq)
+	err = storageClient.API.SendMessage(msgReq)
 
 	if err != nil {
 		display.PrintMessage("error", "Failed to send message")
@@ -197,15 +196,15 @@ func trimText(text string, length int) string {
 }
 
 // prompts
-func promptForRecipientName() (string, error) {
-	sqlite, err := storage.NewSQLiteStorage()
-	if err != nil {
-		return "", err
-	}
+func promptForRecipientName(storageClient *storage.Storage) (string, error) {
+	//sqlite, err := storage.NewSQLiteStorage()
+	//if err != nil {
+	//	return "", err
+	//}
+	//
+	//defer sqlite.Close()
 
-	defer sqlite.Close()
-
-	contacts, err := sqlite.GetContacts()
+	contacts, err := storageClient.GetContacts()
 	if err != nil {
 		return "", err
 	}

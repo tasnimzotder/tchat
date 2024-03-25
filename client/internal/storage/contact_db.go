@@ -3,7 +3,7 @@ package storage
 import "github.com/tasnimzotder/tchat/_client/pkg/models"
 
 // contacts
-func (s *SQLiteStorage) SaveContact(contact models.Contact) error {
+func (s *Storage) SaveContact(contact models.Contact) error {
 	// check if contact and id exists
 	var c models.Contact
 
@@ -29,7 +29,7 @@ func (s *SQLiteStorage) SaveContact(contact models.Contact) error {
 	return nil
 }
 
-func (s *SQLiteStorage) GetContacts() ([]models.Contact, error) {
+func (s *Storage) GetContacts() ([]models.Contact, error) {
 	var contacts []models.Contact
 	result := s.db.Find(&contacts)
 	if result.Error != nil {
@@ -39,7 +39,7 @@ func (s *SQLiteStorage) GetContacts() ([]models.Contact, error) {
 	return contacts, nil
 }
 
-func (s *SQLiteStorage) GetContactByName(name string) (models.Contact, error) {
+func (s *Storage) GetContactByName(name string) (models.Contact, error) {
 	var contact models.Contact
 	result := s.db.Where("name = ?", name).First(&contact)
 	if result.Error != nil {
@@ -49,7 +49,7 @@ func (s *SQLiteStorage) GetContactByName(name string) (models.Contact, error) {
 	return contact, nil
 }
 
-func (s *SQLiteStorage) GetContactByID(id string) (models.Contact, error) {
+func (s *Storage) GetContactByID(id string) (models.Contact, error) {
 	var contact models.Contact
 	result := s.db.Where("id = ?", id).First(&contact)
 	if result.Error != nil {

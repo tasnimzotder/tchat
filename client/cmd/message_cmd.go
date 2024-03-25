@@ -7,15 +7,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tasnimzotder/tchat/_client/internal/display"
 	"github.com/tasnimzotder/tchat/_client/internal/storage"
-	"github.com/tasnimzotder/tchat/_client/pkg/client"
 )
 
-func messageCmd(apiClient *client.Client) *cobra.Command {
+func messageCmd(storageClient *storage.Storage) *cobra.Command {
 	_messageCmd := &cobra.Command{
 		Use:   "msg",
 		Short: "Message commands",
 		Run: func(cmd *cobra.Command, args []string) {
-			messageCmdHandler(apiClient, cmd, args)
+			messageCmdHandler(storageClient, cmd, args)
 		},
 	}
 
@@ -23,13 +22,13 @@ func messageCmd(apiClient *client.Client) *cobra.Command {
 	_messageCmd.Flags().BoolP("display", "d", false, "Display nth Message (default: last)")
 	_messageCmd.Flags().BoolP("save", "s", false, "Save nth Message (default: last)")
 
-	_messageCmd.AddCommand(sendMessageCmd(apiClient))
+	_messageCmd.AddCommand(sendMessageCmd(storageClient))
 	// messageCmd.AddCommand(getMessagesCmd(apiClient))
 
 	return _messageCmd
 }
 
-func messageCmdHandler(apiClient *client.Client, cmd *cobra.Command, args []string) error {
+func messageCmdHandler(storageClient *storage.Storage, cmd *cobra.Command, args []string) error {
 	clearFlag, err := cmd.Flags().GetBool("clear")
 	if err != nil {
 		return err
@@ -50,25 +49,25 @@ func messageCmdHandler(apiClient *client.Client, cmd *cobra.Command, args []stri
 		fmt.Println("Saving last message")
 	}
 
-	sqlite, err := storage.NewSQLiteStorage()
+	//sqlite, err := storage.NewSQLiteStorage()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//defer sqlite.Close()
+
+	userID, err := storageClient.GetUserID()
 	if err != nil {
 		return err
 	}
 
-	defer sqlite.Close()
-
-	userID, err := sqlite.GetUserID()
-	if err != nil {
-		return err
-	}
-
-	messages, err := apiClient.GetMessages(userID)
+	messages, err := storageClient.API.GetMessages(userID)
 	if err != nil {
 		return err
 	}
 
 	if clearFlag {
-		err = sqlite.DeleteMessages()
+		err = storageClient.DeleteMessages()
 
 		if err != nil {
 			return err
@@ -78,13 +77,13 @@ func messageCmdHandler(apiClient *client.Client, cmd *cobra.Command, args []stri
 	}
 
 	// save messages
-	err = sqlite.SaveMessages(messages)
+	err = storageClient.SaveMessages(messages)
 	if err != nil {
 		return err
 	}
 
 	// get messages
-	messages, err = sqlite.GetMessages()
+	messages, err = storageClient.GetMessages()
 	if err != nil {
 		return err
 	}
@@ -93,7 +92,6 @@ func messageCmdHandler(apiClient *client.Client, cmd *cobra.Command, args []stri
 	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
 		messages[i], messages[j] = messages[j], messages[i]
 	}
-	
 
 	if displayFlag {
 		// todo: implement
@@ -121,9 +119,9 @@ func messageCmdHandler(apiClient *client.Client, cmd *cobra.Command, args []stri
 		}
 
 		message := messages[len(messages)-idx]
-		display.DisplaySingleMessage(message)
+		display.DisplaySingleMessage(storageClient, message)
 	} else {
-		display.DisplayMessages(messages)
+		display.DisplayMessages(storageClient, messages)
 	}
 
 	return nil
