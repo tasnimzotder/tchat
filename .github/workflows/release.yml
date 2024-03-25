@@ -9,10 +9,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-12, ubuntu-latest]  
+        os: [macos-14, ubuntu-latest]  
         arch: [amd64, arm64] 
         exclude:
-          - os: macos-12
+          - os: macos-14
             arch: amd64
 
     defaults:
@@ -37,12 +37,14 @@ jobs:
       - name: Build client
         env:
           CGO_ENABLED: 1
-          GOOS: ${{ matrix.os }}
+          # GOOS: ${{ matrix.os }}
+          # get os name from system - bash command
+          GOOS: $(uname | tr '[:upper:]' '[:lower:]')
           GOARCH: ${{ matrix.arch }}
         run: go build -o client
 
       - name: Upload client artifact
         uses: actions/upload-artifact@v3
         with:
-          name: tchat-${{ matrix.os }}-${{ matrix.arch }} 
+          name: tchat-${{ env.GOOS }}-${{ matrix.arch }} 
           path: ./client 
